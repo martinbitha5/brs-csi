@@ -1,0 +1,2 @@
+export { CameraScanner } from './CameraScanner';
+

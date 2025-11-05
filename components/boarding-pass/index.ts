@@ -1,0 +1,2 @@
+export { BoardingPassCard } from './BoardingPassCard';
+
