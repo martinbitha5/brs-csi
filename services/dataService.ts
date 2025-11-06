@@ -140,10 +140,26 @@ export const dataService = {
     bagPiece.updated_at = now;
 
     // Créer un log de scan
+    // Convertir BagPieceStatus en ScanAction
+    let scanAction: ScanAction;
+    switch (status) {
+      case BagPieceStatus.CHECKED_IN:
+        scanAction = ScanAction.CHECKED_IN;
+        break;
+      case BagPieceStatus.LOADED:
+        scanAction = ScanAction.LOADED;
+        break;
+      case BagPieceStatus.ARRIVED:
+        scanAction = ScanAction.ARRIVED;
+        break;
+      default:
+        scanAction = ScanAction.ERROR;
+    }
+    
     const scanLog: ScanLog = {
       id: generateId(),
       bag_piece_id: bagPieceId,
-      action: status as ScanAction,
+      action: scanAction,
       agent_id: agentId,
       station,
       timestamp: now,
@@ -312,6 +328,180 @@ export const dataService = {
     bagPieces = [];
     scanLogs = [];
     boardingPasses = [];
+  },
+
+  // Historique des scans
+  getScanLogs: (bagPieceId?: string, agentId?: string, station?: string): ScanLog[] => {
+    let logs = [...scanLogs];
+    
+    if (bagPieceId) {
+      logs = logs.filter((log) => log.bag_piece_id === bagPieceId);
+    }
+    if (agentId) {
+      logs = logs.filter((log) => log.agent_id === agentId);
+    }
+    if (station) {
+      logs = logs.filter((log) => log.station === station);
+    }
+    
+    return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  },
+
+  getScanLogsByBagPiece: (bagPieceId: string): ScanLog[] => {
+    return scanLogs
+      .filter((log) => log.bag_piece_id === bagPieceId)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  },
+
+  // Détection des lots incomplets
+  checkIncompleteBagSets: (flightId?: string): BagSet[] => {
+    let sets = [...bagSets];
+    
+    if (flightId) {
+      sets = sets.filter((bs) => bs.flight_id === flightId);
+    }
+    
+    return sets.filter((bagSet) => {
+      const pieces = bagPieces.filter((bp) => bp.bag_set_id === bagSet.id);
+      const scannedPieces = pieces.filter((bp) => 
+        bp.status !== BagPieceStatus.CREATED && bp.status !== BagPieceStatus.MISSING
+      );
+      
+      // Vérifier les indices manquants
+      const expectedIndices = Array.from({ length: bagSet.pieces_expected }, (_, i) => i + 1);
+      const existingIndices = pieces.map((p) => p.piece_index);
+      const missingIndices = expectedIndices.filter((idx) => !existingIndices.includes(idx));
+      
+      // Un lot est incomplet si :
+      // 1. Le nombre de pièces scannées < pièces attendues
+      // 2. Des indices sont manquants
+      return scannedPieces.length < bagSet.pieces_expected || missingIndices.length > 0;
+    });
+  },
+
+  // Recherche avancée avec filtres
+  advancedSearch: (filters: {
+    flightId?: string;
+    station?: string;
+    status?: BagPieceStatus;
+    dateFrom?: string;
+    dateTo?: string;
+    tagFull?: string;
+    pnr?: string;
+    passengerName?: string;
+  }): BagPiece[] => {
+    let results = [...bagPieces];
+    
+    if (filters.tagFull) {
+      results = results.filter((bp) => bp.tag_full.includes(filters.tagFull!));
+    }
+    
+    if (filters.status) {
+      results = results.filter((bp) => bp.status === filters.status);
+    }
+    
+    if (filters.station) {
+      results = results.filter((bp) => bp.station === filters.station);
+    }
+    
+    if (filters.dateFrom || filters.dateTo) {
+      results = results.filter((bp) => {
+        if (!bp.last_scan_at) return false;
+        const scanDate = new Date(bp.last_scan_at);
+        if (filters.dateFrom && scanDate < new Date(filters.dateFrom)) return false;
+        if (filters.dateTo && scanDate > new Date(filters.dateTo)) return false;
+        return true;
+      });
+    }
+    
+    if (filters.flightId || filters.pnr || filters.passengerName) {
+      const matchingPassengers: string[] = [];
+      
+      if (filters.flightId) {
+        passengers
+          .filter((p) => p.flight_id === filters.flightId)
+          .forEach((p) => matchingPassengers.push(p.id));
+      }
+      
+      if (filters.pnr) {
+        passengers
+          .filter((p) => p.pnr === filters.pnr)
+          .forEach((p) => matchingPassengers.push(p.id));
+      }
+      
+      if (filters.passengerName) {
+        passengers
+          .filter((p) => p.name.toLowerCase().includes(filters.passengerName!.toLowerCase()))
+          .forEach((p) => matchingPassengers.push(p.id));
+      }
+      
+      const matchingBagSets = bagSets
+        .filter((bs) => matchingPassengers.includes(bs.passenger_id))
+        .map((bs) => bs.id);
+      
+      results = results.filter((bp) => matchingBagSets.includes(bp.bag_set_id));
+    }
+    
+    return results;
+  },
+
+  // Liste des bagages manquants
+  getMissingBagPieces: (flightId?: string, station?: string): BagPiece[] => {
+    let missing = bagPieces.filter((bp) => bp.status === BagPieceStatus.MISSING);
+    
+    if (flightId) {
+      const flightBagSets = bagSets
+        .filter((bs) => bs.flight_id === flightId)
+        .map((bs) => bs.id);
+      missing = missing.filter((bp) => flightBagSets.includes(bp.bag_set_id));
+    }
+    
+    if (station) {
+      missing = missing.filter((bp) => bp.station === station);
+    }
+    
+    return missing;
+  },
+
+  // Statistiques pour les agents
+  getAgentStatistics: (agentId: string, station?: string, date?: string): {
+    scansToday: number;
+    scansTotal: number;
+    bagsScanned: number;
+    incompleteSets: number;
+    missingBags: number;
+  } => {
+    const today = date || new Date().toISOString().split('T')[0];
+    const todayStart = new Date(today).toISOString();
+    const todayEnd = new Date(today).setHours(23, 59, 59, 999).toString();
+    
+    let logs = scanLogs.filter((log) => log.agent_id === agentId);
+    
+    if (station) {
+      logs = logs.filter((log) => log.station === station);
+    }
+    
+    const scansToday = logs.filter((log) => {
+      const logDate = new Date(log.timestamp);
+      return logDate >= new Date(todayStart) && logDate <= new Date(todayEnd);
+    }).length;
+    
+    const scansTotal = logs.length;
+    
+    const uniqueBagPieces = new Set(logs.map((log) => log.bag_piece_id));
+    const bagsScanned = uniqueBagPieces.size;
+    
+    const incompleteSets = dataService.checkIncompleteBagSets().length;
+    
+    const missingBags = dataService.getMissingBagPieces(undefined, station).length;
+    
+    return {
+      scansToday,
+      scansTotal,
+      bagsScanned,
+      incompleteSets,
+      missingBags,
+    };
   },
 
   // Helper: Décoder les données du code-barres (simulation)

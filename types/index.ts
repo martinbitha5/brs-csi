@@ -101,6 +101,7 @@ export interface User {
   email: string;
   role: UserRole;
   station: string | null;
+  language?: 'fr' | 'en' | 'lingala' | 'swahili';
   created_at: string;
   updated_at: string;
 }
@@ -151,5 +152,42 @@ export interface BoardingPassScanResult {
 export interface BoardingPassFormData {
   barcodeData: string;
   station: string;
+}
+
+// Types pour les notifications
+export enum NotificationType {
+  FLIGHT_CLOSING_WITH_MISSING_BAGS = 'flight_closing_with_missing_bags',
+  INCOMPLETE_BAG_SET = 'incomplete_bag_set',
+  BAG_MISSING = 'bag_missing',
+  FLIGHT_DEPARTING_SOON = 'flight_departing_soon',
+}
+
+export enum NotificationPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent',
+}
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  priority: NotificationPriority;
+  title: string;
+  message: string;
+  flight_id?: string;
+  bag_set_id?: string;
+  bag_piece_id?: string;
+  station?: string;
+  read: boolean;
+  created_at: string;
+  expires_at?: string;
+}
+
+export interface FlightClosingNotification {
+  flight: Flight;
+  missingBagsCount: number;
+  incompleteSetsCount: number;
+  closingTime: string; // ISO date string
 }
 

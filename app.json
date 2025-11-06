@@ -44,11 +44,19 @@
         {
           "cameraPermission": "L'application a besoin d'accéder à votre caméra pour scanner les codes-barres des bagages."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#3B82F6",
+          "sounds": [],
+          "mode": "production"
+        }
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     }
   }
 }

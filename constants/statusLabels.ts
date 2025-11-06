@@ -1,6 +1,6 @@
 // Labels pour les différents statuts en français
 
-import { BagPieceStatus, BagSetStatus, PassengerStatus } from '@/types';
+import { BagPieceStatus, BagSetStatus, PassengerStatus, ScanAction } from '@/types';
 
 export const BAG_PIECE_STATUS_LABELS: Record<BagPieceStatus, string> = {
   [BagPieceStatus.CREATED]: 'Créé',
@@ -45,5 +45,23 @@ export const getBagSetStatusColor = (status: BagSetStatus): string => {
     [BagSetStatus.ERROR]: '#EF4444', // rouge
   };
   return colors[status] || '#6B7280';
+};
+
+export const SCAN_ACTION_LABELS: Record<ScanAction, { label: string; color: string }> = {
+  [ScanAction.CHECKED_IN]: { label: 'Enregistré', color: '#3B82F6' },
+  [ScanAction.LOADED]: { label: 'Chargé', color: '#10B981' },
+  [ScanAction.ARRIVED]: { label: 'Arrivé', color: '#059669' },
+  [ScanAction.ERROR]: { label: 'Erreur', color: '#EF4444' },
+  [ScanAction.BOARDING_PASS_SCANNED]: { label: 'Carte d\'embarquement scannée', color: '#8B5CF6' },
+};
+
+export const STATUS_LABELS = {
+  ...SCAN_ACTION_LABELS,
+  ...Object.fromEntries(
+    Object.entries(BAG_PIECE_STATUS_LABELS).map(([key, value]) => [
+      key,
+      { label: value, color: getBagPieceStatusColor(key as BagPieceStatus) },
+    ])
+  ),
 };
 
