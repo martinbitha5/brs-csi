@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, KeyboardAvoidingView, Platform, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { languageService, Language } from '@/services/languageService';
+import { useTranslation } from '@/hooks/use-translation';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useSharedValue,
@@ -26,7 +27,17 @@ export default function LanguageSelectionScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const router = useRouter();
+  const { t, currentLanguage } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
+
+  useEffect(() => {
+    // Charger la langue actuelle si elle existe
+    const loadCurrentLanguage = async () => {
+      const lang = await languageService.loadStoredLanguage();
+      setSelectedLanguage(lang);
+    };
+    loadCurrentLanguage();
+  }, []);
 
   // Animations pour les boutons
   const buttonAnimations = languages.map(() => ({
@@ -93,10 +104,10 @@ export default function LanguageSelectionScreen() {
               />
             </ThemedView>
             <ThemedText type="title" style={styles.title}>
-              Choisissez votre langue
+              {t('language.select')}
             </ThemedText>
             <ThemedText type="subtitle" style={styles.subtitle}>
-              Select your language
+              {t('language.select.subtitle')}
             </ThemedText>
           </View>
 

@@ -239,8 +239,8 @@ export const notificationService = {
       }
     }
 
-    return notifications.sort((a, b) => {
-      // Trier par priorité puis par date
+    // Trier les notifications par priorité puis par date
+    const sortedNotifications = notifications.sort((a, b) => {
       const priorityOrder = {
         [NotificationPriority.URGENT]: 4,
         [NotificationPriority.HIGH]: 3,
@@ -257,9 +257,9 @@ export const notificationService = {
     });
 
     // Sauvegarder les notifications dans Supabase (éviter les doublons)
-    await notificationService.persistNotifications(notifications, station);
+    await notificationService.persistNotifications(sortedNotifications, station);
 
-    return notifications;
+    return sortedNotifications;
   },
 
   /**

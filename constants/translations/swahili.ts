@@ -1,0 +1,77 @@
+export const translations = {
+  // Language Selection
+  'language.select': 'Chagua lugha yako',
+  'language.select.subtitle': 'Select your language',
+  
+  // Login
+  'login.title': 'BRS-CSI',
+  'login.subtitle': 'Mfumo wa Usimamizi wa Mzigo',
+  'login.email': 'Barua pepe',
+  'login.password': 'Nenosiri',
+  'login.button': 'Ingia',
+  'login.button.loading': 'Inaingia...',
+  'login.noAccount': 'Huna akaunti?',
+  'login.signup': 'Jisajili',
+  'login.error.empty': 'Tafadhali jaza sehemu zote',
+  'login.error.failed': 'Hitilafu ya kuingia',
+  'login.error.generic': 'Hitilafu ilitokea wakati wa kuingia',
+  
+  // Register
+  'register.title': 'Unda akaunti',
+  'register.subtitle': 'Jaza taarifa za kujisajili',
+  'register.name': 'Jina kamili',
+  'register.email': 'Barua pepe',
+  'register.password': 'Nenosiri (angalau herufi 6)',
+  'register.confirmPassword': 'Thibitisha nenosiri',
+  'register.role': 'Jukumu',
+  'register.station': 'Kituo',
+  'register.selectRole': 'Chagua jukumu',
+  'register.selectStation': 'Chagua kituo',
+  'register.button': 'Jisajili',
+  'register.button.loading': 'Inasajili...',
+  'register.hasAccount': 'Tayari una akaunti?',
+  'register.login': 'Ingia',
+  'register.error.empty': 'Tafadhali jaza sehemu zote',
+  'register.error.passwordLength': 'Nenosiri lazima liwe na angalau herufi 6',
+  'register.error.passwordMatch': 'Nenosiri hazifanani',
+  'register.error.station': 'Tafadhali chagua kituo',
+  'register.success': 'Usajili umefanikiwa',
+  'register.success.message': 'Akaunti yako imeundwa kwa mafanikio. Sasa unaweza kuingia.',
+  'register.error.failed': 'Hitilafu ya usajili',
+  'register.error.generic': 'Hitilafu ilitokea wakati wa usajili',
+  
+  // Roles
+  'role.agent': 'Wakala',
+  'role.supervisor': 'Msimamizi',
+  'role.admin': 'Msimamizi Mkuu',
+  'role.agent.description': 'Skani mizigo na usimamize shughuli za kila siku',
+  'role.supervisor.description': 'Simamia shughuli na toa ripoti',
+  'role.admin.description': 'Simamia watumiaji na usanidi',
+  
+  // Settings
+  'settings.title': 'Mipangilio',
+  'settings.subtitle': 'Simamia mapendeleo yako na akaunti yako',
+  'settings.account': 'Akaunti',
+  'settings.account.info': 'Taarifa za akaunti yako',
+  'settings.name': 'Jina',
+  'settings.email': 'Barua pepe',
+  'settings.role': 'Jukumu',
+  'settings.station': 'Kituo',
+  'settings.language': 'Lugha',
+  'settings.language.subtitle': 'Chagua lugha unayopenda',
+  'settings.help': 'Msaada na Usaidizi',
+  'settings.help.subtitle': 'Unahitaji msaada? Angalia rasilimali zetu',
+  'settings.faq': 'Maswali Yanayoulizwa Mara kwa Mara (FAQ)',
+  'settings.faq.description': 'Pata majibu ya maswali yako',
+  'settings.support': 'Wasiliana na Usaidizi',
+  'settings.support.description': 'Wasiliana na timu yetu ya usaidizi',
+  'settings.logout': 'Toka',
+  'settings.logout.confirm': 'Toka',
+  'settings.logout.message': 'Je, una uhakika unataka kutoka?',
+  'settings.logout.cancel': 'Ghairi',
+  
+  // Common
+  'common.ok': 'Sawa',
+  'common.error': 'Hitilafu',
+};
+

@@ -1,0 +1,77 @@
+export const translations = {
+  // Language Selection
+  'language.select': 'Pona lingala oyo olingi',
+  'language.select.subtitle': 'Select your language',
+  
+  // Login
+  'login.title': 'BRS-CSI',
+  'login.subtitle': 'Sistème ya Kokanga Bilanga',
+  'login.email': 'Email',
+  'login.password': 'Banda ya kobomba',
+  'login.button': 'Kokota',
+  'login.button.loading': 'Kokota...',
+  'login.noAccount': 'Ozali na káti te?',
+  'login.signup': 'Kosaina',
+  'login.error.empty': 'Sengi kofungola bilanga nyonso',
+  'login.error.failed': 'Mbongo ya kokota',
+  'login.error.generic': 'Mbongo esalaki na kokota',
+  
+  // Register
+  'register.title': 'Kosala káti',
+  'register.subtitle': 'Fungola makambo oyo esengeli',
+  'register.name': 'Nkombo ya mokonzi',
+  'register.email': 'Email',
+  'register.password': 'Banda ya kobomba (min. 6 makambo)',
+  'register.confirmPassword': 'Kondima banda ya kobomba',
+  'register.role': 'Mosala',
+  'register.station': 'Esika',
+  'register.selectRole': 'Pona mosala',
+  'register.selectStation': 'Pona esika',
+  'register.button': 'Kosaina',
+  'register.button.loading': 'Kosaina...',
+  'register.hasAccount': 'Ozali na káti?',
+  'register.login': 'Kokota',
+  'register.error.empty': 'Sengi kofungola bilanga nyonso',
+  'register.error.passwordLength': 'Banda ya kobomba esengeli kozala na makambo 6 te',
+  'register.error.passwordMatch': 'Banda ya kobomba ezali ndenge moko te',
+  'register.error.station': 'Sengi kopona esika',
+  'register.success': 'Kosaina esali malamu',
+  'register.success.message': 'Káti na yo esali malamu. Okoki kokota sikawa.',
+  'register.error.failed': 'Mbongo ya kosaina',
+  'register.error.generic': 'Mbongo esalaki na kosaina',
+  
+  // Roles
+  'role.agent': 'Mobateli',
+  'role.supervisor': 'Mokengeli',
+  'role.admin': 'Mokonzi',
+  'role.agent.description': 'Kosukola bilanga mpe kokanga mosala ya mokolo',
+  'role.supervisor.description': 'Kokengela mosala mpe kobimisa rapó',
+  'role.admin.description': 'Kokanga bato mpe makambo ya kokoma',
+  
+  // Settings
+  'settings.title': 'Makambo',
+  'settings.subtitle': 'Kokanga oyo olingi mpe káti na yo',
+  'settings.account': 'Káti',
+  'settings.account.info': 'Makambo ya káti na yo',
+  'settings.name': 'Nkombo',
+  'settings.email': 'Email',
+  'settings.role': 'Mosala',
+  'settings.station': 'Esika',
+  'settings.language': 'Lingala',
+  'settings.language.subtitle': 'Pona lingala oyo olingi',
+  'settings.help': 'Lisalisi mpe Support',
+  'settings.help.subtitle': 'Ozali na lisalisi? Tala makambo na biso',
+  'settings.faq': 'Mituna ya bato mingi (FAQ)',
+  'settings.faq.description': 'Wana mbano na mituna na yo',
+  'settings.support': 'Benga Support',
+  'settings.support.description': 'Benga ekipi ya lisalisi',
+  'settings.logout': 'Kobima',
+  'settings.logout.confirm': 'Kobima',
+  'settings.logout.message': 'Ozali na ntembe te olingi kobima?',
+  'settings.logout.cancel': 'Kolongola',
+  
+  // Common
+  'common.ok': 'Malamu',
+  'common.error': 'Mbongo',
+};
+

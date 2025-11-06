@@ -1,0 +1,77 @@
+export const translations = {
+  // Language Selection
+  'language.select': 'Choisissez votre langue',
+  'language.select.subtitle': 'Select your language',
+  
+  // Login
+  'login.title': 'BRS-CSI',
+  'login.subtitle': 'Système de Gestion des Bagages',
+  'login.email': 'Email',
+  'login.password': 'Mot de passe',
+  'login.button': 'Se connecter',
+  'login.button.loading': 'Connexion...',
+  'login.noAccount': 'Pas encore de compte ?',
+  'login.signup': "S'inscrire",
+  'login.error.empty': 'Veuillez remplir tous les champs',
+  'login.error.failed': 'Erreur de connexion',
+  'login.error.generic': 'Une erreur est survenue lors de la connexion',
+  
+  // Register
+  'register.title': 'Créer un compte',
+  'register.subtitle': 'Remplissez les informations pour vous inscrire',
+  'register.name': 'Nom complet',
+  'register.email': 'Email',
+  'register.password': 'Mot de passe (min. 6 caractères)',
+  'register.confirmPassword': 'Confirmer le mot de passe',
+  'register.role': 'Rôle',
+  'register.station': 'Station',
+  'register.selectRole': 'Sélectionner le rôle',
+  'register.selectStation': 'Sélectionner la station',
+  'register.button': "S'inscrire",
+  'register.button.loading': 'Inscription...',
+  'register.hasAccount': 'Déjà un compte ?',
+  'register.login': 'Se connecter',
+  'register.error.empty': 'Veuillez remplir tous les champs',
+  'register.error.passwordLength': 'Le mot de passe doit contenir au moins 6 caractères',
+  'register.error.passwordMatch': 'Les mots de passe ne correspondent pas',
+  'register.error.station': 'Veuillez sélectionner une station',
+  'register.success': 'Inscription réussie',
+  'register.success.message': 'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.',
+  'register.error.failed': "Erreur d'inscription",
+  'register.error.generic': "Une erreur est survenue lors de l'inscription",
+  
+  // Roles
+  'role.agent': 'Agent',
+  'role.supervisor': 'Superviseur',
+  'role.admin': 'Administrateur',
+  'role.agent.description': 'Scanner les bagages et gérer les opérations quotidiennes',
+  'role.supervisor.description': 'Superviser les opérations et générer des rapports',
+  'role.admin.description': 'Gérer les utilisateurs et la configuration',
+  
+  // Settings
+  'settings.title': 'Paramètres',
+  'settings.subtitle': 'Gérer vos préférences et votre compte',
+  'settings.account': 'Compte',
+  'settings.account.info': 'Informations sur votre compte',
+  'settings.name': 'Nom',
+  'settings.email': 'Email',
+  'settings.role': 'Rôle',
+  'settings.station': 'Station',
+  'settings.language': 'Langue',
+  'settings.language.subtitle': 'Choisissez votre langue préférée',
+  'settings.help': 'Aide et Support',
+  'settings.help.subtitle': 'Besoin d\'aide ? Consultez nos ressources',
+  'settings.faq': 'Questions fréquentes (FAQ)',
+  'settings.faq.description': 'Trouvez des réponses à vos questions',
+  'settings.support': 'Contact Support',
+  'settings.support.description': 'Contactez notre équipe de support',
+  'settings.logout': 'Se déconnecter',
+  'settings.logout.confirm': 'Déconnexion',
+  'settings.logout.message': 'Êtes-vous sûr de vouloir vous déconnecter ?',
+  'settings.logout.cancel': 'Annuler',
+  
+  // Common
+  'common.ok': 'OK',
+  'common.error': 'Erreur',
+};
+

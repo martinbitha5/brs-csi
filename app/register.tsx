@@ -10,11 +10,13 @@ import { UserRole } from '@/types';
 import { AIRPORTS } from '@/constants/airports';
 import { Ionicons } from '@expo/vector-icons';
 import { languageService } from '@/services/languageService';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function RegisterScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const router = useRouter();
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,23 +32,23 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     // Validation
     if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      Alert.alert(t('common.error'), t('register.error.empty'));
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      Alert.alert(t('common.error'), t('register.error.passwordLength'));
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      Alert.alert(t('common.error'), t('register.error.passwordMatch'));
       return;
     }
 
     // Validation pour les agents et superviseurs
     if ((role === UserRole.AGENT || role === UserRole.SUPERVISOR) && !station) {
-      Alert.alert('Erreur', 'Veuillez sélectionner une station');
+      Alert.alert(t('common.error'), t('register.error.station'));
       return;
     }
 
@@ -66,20 +68,20 @@ export default function RegisterScreen() {
 
       if (result.success && result.user) {
         Alert.alert(
-          'Inscription réussie',
-          'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.',
+          t('register.success'),
+          t('register.success.message'),
           [
             {
-              text: 'OK',
+              text: t('common.ok'),
               onPress: () => router.replace('/login'),
             },
           ]
         );
       } else {
-        Alert.alert('Erreur d\'inscription', result.error || 'Une erreur est survenue');
+        Alert.alert(t('register.error.failed'), result.error || t('register.error.generic'));
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Une erreur est survenue lors de l\'inscription');
+      Alert.alert(t('common.error'), t('register.error.generic'));
     } finally {
       setLoading(false);
     }
@@ -107,9 +109,9 @@ export default function RegisterScreen() {
   };
 
   const roleOptions = [
-    { label: 'Agent', value: UserRole.AGENT, description: 'Scanner les bagages et gérer les opérations quotidiennes' },
-    { label: 'Superviseur', value: UserRole.SUPERVISOR, description: 'Superviser les opérations et générer des rapports' },
-    { label: 'Administrateur', value: UserRole.ADMIN, description: 'Gérer les utilisateurs et la configuration' },
+    { label: t('role.agent'), value: UserRole.AGENT, description: t('role.agent.description') },
+    { label: t('role.supervisor'), value: UserRole.SUPERVISOR, description: t('role.supervisor.description') },
+    { label: t('role.admin'), value: UserRole.ADMIN, description: t('role.admin.description') },
   ];
 
   const getRoleLabel = (role: UserRole): string => {
@@ -140,10 +142,10 @@ export default function RegisterScreen() {
               />
             </TouchableOpacity>
             <ThemedText type="title" style={styles.title}>
-              Créer un compte
+              {t('register.title')}
             </ThemedText>
             <ThemedText type="subtitle" style={styles.subtitle}>
-              Remplissez les informations pour vous inscrire
+              {t('register.subtitle')}
             </ThemedText>
           </View>
 
@@ -157,7 +159,7 @@ export default function RegisterScreen() {
               />
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
-                placeholder="Nom complet"
+                placeholder={t('register.name')}
                 placeholderTextColor={isDark ? '#666' : '#999'}
                 value={name}
                 onChangeText={setName}
@@ -175,7 +177,7 @@ export default function RegisterScreen() {
               />
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
-                placeholder="Email"
+                placeholder={t('register.email')}
                 placeholderTextColor={isDark ? '#666' : '#999'}
                 value={email}
                 onChangeText={setEmail}
@@ -195,7 +197,7 @@ export default function RegisterScreen() {
               />
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
-                placeholder="Mot de passe (min. 6 caractères)"
+                placeholder={t('register.password')}
                 placeholderTextColor={isDark ? '#666' : '#999'}
                 value={password}
                 onChangeText={setPassword}
@@ -224,7 +226,7 @@ export default function RegisterScreen() {
               />
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
-                placeholder="Confirmer le mot de passe"
+                placeholder={t('register.confirmPassword')}
                 placeholderTextColor={isDark ? '#666' : '#999'}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -254,9 +256,9 @@ export default function RegisterScreen() {
                 color={isDark ? '#999' : '#666'}
                 style={styles.selectorIcon}
               />
-              <ThemedText style={styles.selectorText}>
-                {getRoleLabel(role)}
-              </ThemedText>
+                <ThemedText style={styles.selectorText}>
+                  {getRoleLabel(role) || t('register.role')}
+                </ThemedText>
               <Ionicons
                 name="chevron-down-outline"
                 size={20}
@@ -276,7 +278,7 @@ export default function RegisterScreen() {
                   style={styles.selectorIcon}
                 />
                 <ThemedText style={styles.selectorText}>
-                  {AIRPORTS.find(a => a.code === station)?.name || station || 'Sélectionner une station'}
+                  {AIRPORTS.find(a => a.code === station)?.name || station || t('register.selectStation')}
                 </ThemedText>
                 <Ionicons
                   name="chevron-down-outline"
@@ -297,7 +299,7 @@ export default function RegisterScreen() {
                 <ThemedView style={styles.modalContent}>
                   <View style={styles.modalHeader}>
                     <ThemedText type="title" style={styles.modalTitle}>
-                      Sélectionner le rôle
+                      {t('register.selectRole')}
                     </ThemedText>
                     <TouchableOpacity
                       onPress={() => setShowRoleModal(false)}
@@ -370,7 +372,7 @@ export default function RegisterScreen() {
                 <ThemedView style={styles.modalContent}>
                   <View style={styles.modalHeader}>
                     <ThemedText type="title" style={styles.modalTitle}>
-                      Sélectionner la station
+                      {t('register.selectStation')}
                     </ThemedText>
                     <TouchableOpacity
                       onPress={() => setShowStationModal(false)}
@@ -437,17 +439,17 @@ export default function RegisterScreen() {
               disabled={loading || !isFormValid}
             >
               <ThemedText style={styles.buttonText}>
-                {loading ? 'Inscription...' : 'S\'inscrire'}
+                {loading ? t('register.button.loading') : t('register.button')}
               </ThemedText>
             </TouchableOpacity>
 
             <View style={styles.loginContainer}>
               <ThemedText style={styles.loginText}>
-                Déjà un compte ?{' '}
+                {t('register.hasAccount')}{' '}
               </ThemedText>
               <TouchableOpacity onPress={() => router.replace('/login')}>
                 <ThemedText style={styles.loginLink}>
-                  Se connecter
+                  {t('register.login')}
                 </ThemedText>
               </TouchableOpacity>
             </View>

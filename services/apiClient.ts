@@ -12,6 +12,7 @@ import {
   BagPieceStatus,
   Notification,
 } from '@/types';
+import { ErrorHandler, withErrorHandling, AppError } from './errorHandler';
 
 export class ApiError extends Error {
   constructor(
@@ -25,15 +26,16 @@ export class ApiError extends Error {
 }
 
 // Fonction helper pour gérer les erreurs Supabase
-const handleSupabaseError = (error: any): never => {
-  if (error?.code) {
-    throw new ApiError(
-      error.message || 'Une erreur est survenue',
-      error.status || 500,
-      error.code
-    );
-  }
-  throw new ApiError(error?.message || 'Une erreur inconnue est survenue', 500);
+const handleSupabaseError = (error: any, context?: string): never => {
+  const appError = ErrorHandler.parseError(error);
+  ErrorHandler.logError(appError, context);
+  
+  // Convertir AppError en ApiError pour compatibilité
+  throw new ApiError(
+    ErrorHandler.getUserMessage(appError),
+    appError.statusCode,
+    appError.code
+  );
 };
 
 // Fonction helper pour convertir les dates PostgreSQL en ISO strings
@@ -53,7 +55,7 @@ export const apiClient = {
 
     if (error) {
       if (error.code === 'PGRST116') return null; // Not found
-      handleSupabaseError(error);
+      handleSupabaseError(error, 'getFlight');
     }
 
     return data ? {
@@ -70,7 +72,7 @@ export const apiClient = {
       .select('*')
       .order('date', { ascending: false });
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'getFlights');
 
     return (data || []).map((flight) => ({
       ...flight,
@@ -91,7 +93,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -112,7 +114,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -128,7 +130,7 @@ export const apiClient = {
       .delete()
       .eq('id', id);
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
   },
 
   // ============ PASSENGERS ============
@@ -158,7 +160,7 @@ export const apiClient = {
       .eq('flight_id', flightId)
       .order('name');
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((passenger) => ({
       ...passenger,
@@ -182,7 +184,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -202,7 +204,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -218,7 +220,7 @@ export const apiClient = {
       .eq('pnr', pnr)
       .order('name');
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((passenger) => ({
       ...passenger,
@@ -234,7 +236,7 @@ export const apiClient = {
       .ilike('name', `%${name}%`)
       .order('name');
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((passenger) => ({
       ...passenger,
@@ -297,7 +299,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -317,7 +319,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -374,7 +376,7 @@ export const apiClient = {
       .eq('bag_set_id', bagSetId)
       .order('piece_index');
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((piece) => ({
       ...piece,
@@ -401,7 +403,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -422,7 +424,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -445,7 +447,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -475,7 +477,7 @@ export const apiClient = {
 
     const { data, error } = await query;
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((log) => ({
       ...log,
@@ -511,7 +513,7 @@ export const apiClient = {
       .eq('pnr', pnr)
       .order('created_at', { ascending: false });
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((pass) => ({
       ...pass,
@@ -527,7 +529,7 @@ export const apiClient = {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((pass) => ({
       ...pass,
@@ -557,7 +559,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -578,7 +580,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -595,7 +597,7 @@ export const apiClient = {
       .eq('boarding_pass_id', boardingPassId)
       .order('piece_index');
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((piece) => ({
       ...piece,
@@ -626,7 +628,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,
@@ -657,7 +659,7 @@ export const apiClient = {
 
     const { data, error } = await query;
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return (data || []).map((notif) => ({
       ...notif,
@@ -677,7 +679,7 @@ export const apiClient = {
       .select()
       .single();
 
-    if (error) handleSupabaseError(error);
+    if (error) handleSupabaseError(error, 'createFlight');
 
     return {
       ...data,

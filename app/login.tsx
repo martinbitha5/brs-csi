@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -6,12 +6,14 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { authService } from '@/services/authService';
+import { useTranslation } from '@/hooks/use-translation';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function LoginScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const router = useRouter();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      Alert.alert(t('common.error'), t('login.error.empty'));
       return;
     }
 
@@ -31,10 +33,10 @@ export default function LoginScreen() {
         const defaultRoute = authService.getDefaultRouteForRole();
         router.replace(defaultRoute as any);
       } else {
-        Alert.alert('Erreur de connexion', result.error || 'Une erreur est survenue');
+        Alert.alert(t('login.error.failed'), result.error || t('login.error.generic'));
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Une erreur est survenue lors de la connexion');
+      Alert.alert(t('common.error'), t('login.error.generic'));
     } finally {
       setLoading(false);
     }
@@ -77,10 +79,10 @@ export default function LoginScreen() {
               />
             </ThemedView>
             <ThemedText type="title" style={styles.title}>
-              BRS-CSI
+              {t('login.title')}
             </ThemedText>
             <ThemedText type="subtitle" style={styles.subtitle}>
-              Système de Gestion des Bagages
+              {t('login.subtitle')}
             </ThemedText>
           </View>
 
@@ -94,7 +96,7 @@ export default function LoginScreen() {
               />
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
-                placeholder="Email"
+                placeholder={t('login.email')}
                 placeholderTextColor={isDark ? '#666' : '#999'}
                 value={email}
                 onChangeText={setEmail}
@@ -114,7 +116,7 @@ export default function LoginScreen() {
               />
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
-                placeholder="Mot de passe"
+                placeholder={t('login.password')}
                 placeholderTextColor={isDark ? '#666' : '#999'}
                 value={password}
                 onChangeText={setPassword}
@@ -144,17 +146,17 @@ export default function LoginScreen() {
               disabled={loading || !email.trim() || !password.trim()}
             >
               <ThemedText style={styles.buttonText}>
-                {loading ? 'Connexion...' : 'Se connecter'}
+                {loading ? t('login.button.loading') : t('login.button')}
               </ThemedText>
             </TouchableOpacity>
 
             <View style={styles.signupContainer}>
               <ThemedText style={styles.signupText}>
-                Pas encore de compte ?{' '}
+                {t('login.noAccount')}{' '}
               </ThemedText>
               <TouchableOpacity onPress={() => router.push('/register')}>
                 <ThemedText style={styles.signupLink}>
-                  S'inscrire
+                  {t('login.signup')}
                 </ThemedText>
               </TouchableOpacity>
             </View>

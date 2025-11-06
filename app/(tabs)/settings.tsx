@@ -7,6 +7,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useRouter } from 'expo-router';
 import { authService } from '@/services/authService';
 import { languageService, Language } from '@/services/languageService';
+import { useTranslation } from '@/hooks/use-translation';
 import { UserRole } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import FAQ from '@/components/settings/FAQ';
@@ -19,14 +20,14 @@ const languages: { code: Language; name: string; nativeName: string; flag: strin
   { code: 'swahili', name: 'Swahili', nativeName: 'Kiswahili', flag: '🇹🇿' },
 ];
 
-const getRoleLabel = (role: UserRole): string => {
+const getRoleLabel = (role: UserRole, t: (key: string) => string): string => {
   switch (role) {
     case UserRole.ADMIN:
-      return 'Administrateur';
+      return t('role.admin');
     case UserRole.SUPERVISOR:
-      return 'Superviseur';
+      return t('role.supervisor');
     case UserRole.AGENT:
-      return 'Agent';
+      return t('role.agent');
     default:
       return role;
   }
@@ -37,17 +38,8 @@ export default function SettingsScreen() {
   const isDark = colorScheme === 'dark';
   const router = useRouter();
   const currentUser = authService.getCurrentUser();
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('fr');
+  const { t, currentLanguage } = useTranslation();
   const [activeSection, setActiveSection] = useState<'main' | 'faq' | 'support'>('main');
-
-  useEffect(() => {
-    // Charger la langue actuelle depuis AsyncStorage
-    const loadLanguage = async () => {
-      const language = await languageService.loadStoredLanguage();
-      setCurrentLanguage(language);
-    };
-    loadLanguage();
-  }, []);
 
   const handleLanguageChange = async (language: Language) => {
     // Mettre à jour la langue dans le service
@@ -58,22 +50,20 @@ export default function SettingsScreen() {
       await authService.updateUserLanguage(language);
     }
     
-    // Recharger la langue depuis AsyncStorage pour s'assurer qu'elle est bien synchronisée
-    const loadedLanguage = await languageService.loadStoredLanguage();
-    setCurrentLanguage(loadedLanguage);
+    // Le hook useTranslation se mettra à jour automatiquement
   };
 
   const handleLogout = () => {
     Alert.alert(
-      'Déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      t('settings.logout.confirm'),
+      t('settings.logout.message'),
       [
         {
-          text: 'Annuler',
+          text: t('settings.logout.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Déconnexion',
+          text: t('settings.logout'),
           style: 'destructive',
           onPress: async () => {
             await authService.logout();
@@ -132,7 +122,7 @@ export default function SettingsScreen() {
         <ThemedView style={dynamicStyles.header}>
           <View style={styles.headerContent}>
             <ThemedText type="title" style={styles.title}>
-              Paramètres
+              {t('settings.title')}
             </ThemedText>
           </View>
         </ThemedView>
@@ -226,11 +216,11 @@ export default function SettingsScreen() {
                   style={styles.titleIcon}
                 />
                 <ThemedText type="title" style={styles.title}>
-                  Paramètres
+                  {t('settings.title')}
                 </ThemedText>
               </View>
               <ThemedText type="subtitle" style={styles.subtitle}>
-                Gérer vos préférences et votre compte
+                {t('settings.subtitle')}
               </ThemedText>
             </View>
           </View>
@@ -241,10 +231,10 @@ export default function SettingsScreen() {
         {/* Section Compte */}
         <View style={[styles.section, dynamicStyles.section]}>
           <ThemedText type="defaultSemiBold" style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
-            Compte
+            {t('settings.account')}
           </ThemedText>
           <ThemedText type="subtitle" style={[styles.sectionSubtitle, dynamicStyles.sectionSubtitle]}>
-            Informations sur votre compte
+            {t('settings.account.info')}
           </ThemedText>
           
           <View style={[styles.settingItem, dynamicStyles.settingItem]}>
@@ -252,7 +242,7 @@ export default function SettingsScreen() {
               <Ionicons name="person" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
               <View style={styles.settingItemTextContainer}>
                 <ThemedText style={[styles.settingItemLabel, dynamicStyles.sectionSubtitle]}>
-                  Nom
+                  {t('settings.name')}
                 </ThemedText>
                 <ThemedText style={[styles.settingItemValue, dynamicStyles.settingItemText]}>
                   {currentUser.name}
@@ -266,7 +256,7 @@ export default function SettingsScreen() {
               <Ionicons name="mail" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
               <View style={styles.settingItemTextContainer}>
                 <ThemedText style={[styles.settingItemLabel, dynamicStyles.sectionSubtitle]}>
-                  Email
+                  {t('settings.email')}
                 </ThemedText>
                 <ThemedText style={[styles.settingItemValue, dynamicStyles.settingItemText]}>
                   {currentUser.email}
@@ -280,10 +270,10 @@ export default function SettingsScreen() {
               <Ionicons name="shield-checkmark" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
               <View style={styles.settingItemTextContainer}>
                 <ThemedText style={[styles.settingItemLabel, dynamicStyles.sectionSubtitle]}>
-                  Rôle
+                  {t('settings.role')}
                 </ThemedText>
                 <ThemedText style={[styles.settingItemValue, dynamicStyles.settingItemText]}>
-                  {getRoleLabel(currentUser.role)}
+                  {getRoleLabel(currentUser.role, t)}
                 </ThemedText>
               </View>
             </View>
@@ -295,7 +285,7 @@ export default function SettingsScreen() {
                 <Ionicons name="location" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
                 <View style={styles.settingItemTextContainer}>
                   <ThemedText style={[styles.settingItemLabel, dynamicStyles.sectionSubtitle]}>
-                    Station
+                    {t('settings.station')}
                   </ThemedText>
                   <ThemedText style={[styles.settingItemValue, dynamicStyles.settingItemText]}>
                     {currentUser.station}
@@ -309,10 +299,10 @@ export default function SettingsScreen() {
         {/* Section Langue */}
         <View style={[styles.section, dynamicStyles.section]}>
           <ThemedText type="defaultSemiBold" style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
-            Langue
+            {t('settings.language')}
           </ThemedText>
           <ThemedText type="subtitle" style={[styles.sectionSubtitle, dynamicStyles.sectionSubtitle]}>
-            Choisissez votre langue préférée
+            {t('settings.language.subtitle')}
           </ThemedText>
           
           <View style={styles.languagesContainer}>
@@ -367,10 +357,10 @@ export default function SettingsScreen() {
         {/* Section Aide et Support */}
         <View style={[styles.section, dynamicStyles.section]}>
           <ThemedText type="defaultSemiBold" style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
-            Aide et Support
+            {t('settings.help')}
           </ThemedText>
           <ThemedText type="subtitle" style={[styles.sectionSubtitle, dynamicStyles.sectionSubtitle]}>
-            Besoin d'aide ? Consultez nos ressources
+            {t('settings.help.subtitle')}
           </ThemedText>
 
           <TouchableOpacity
@@ -382,10 +372,10 @@ export default function SettingsScreen() {
               <Ionicons name="help-circle" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
               <View style={styles.settingItemTextContainer}>
                 <ThemedText style={[styles.settingItemLabel, dynamicStyles.sectionSubtitle]}>
-                  Questions fréquentes (FAQ)
+                  {t('settings.faq')}
                 </ThemedText>
                 <ThemedText style={[styles.settingItemValue, dynamicStyles.settingItemText]}>
-                  Trouvez des réponses à vos questions
+                  {t('settings.faq.description')}
                 </ThemedText>
               </View>
               <Ionicons name="chevron-forward" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
@@ -401,10 +391,10 @@ export default function SettingsScreen() {
               <Ionicons name="headset" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
               <View style={styles.settingItemTextContainer}>
                 <ThemedText style={[styles.settingItemLabel, dynamicStyles.sectionSubtitle]}>
-                  Contact Support
+                  {t('settings.support')}
                 </ThemedText>
                 <ThemedText style={[styles.settingItemValue, dynamicStyles.settingItemText]}>
-                  Contactez notre équipe de support
+                  {t('settings.support.description')}
                 </ThemedText>
               </View>
               <Ionicons name="chevron-forward" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
@@ -422,7 +412,7 @@ export default function SettingsScreen() {
             <View style={styles.logoutButtonContent}>
               <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
               <ThemedText style={styles.logoutButtonText}>
-                Se déconnecter
+                {t('settings.logout')}
               </ThemedText>
             </View>
           </TouchableOpacity>
