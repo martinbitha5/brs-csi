@@ -211,6 +211,38 @@ export const apiClient = {
     };
   },
 
+  async getPassengersByPnr(pnr: string): Promise<Passenger[]> {
+    const { data, error } = await supabase
+      .from('passengers')
+      .select('*')
+      .eq('pnr', pnr)
+      .order('name');
+
+    if (error) handleSupabaseError(error);
+
+    return (data || []).map((passenger) => ({
+      ...passenger,
+      created_at: formatDate(passenger.created_at) || new Date().toISOString(),
+      updated_at: formatDate(passenger.updated_at) || new Date().toISOString(),
+    }));
+  },
+
+  async getPassengersByName(name: string): Promise<Passenger[]> {
+    const { data, error } = await supabase
+      .from('passengers')
+      .select('*')
+      .ilike('name', `%${name}%`)
+      .order('name');
+
+    if (error) handleSupabaseError(error);
+
+    return (data || []).map((passenger) => ({
+      ...passenger,
+      created_at: formatDate(passenger.created_at) || new Date().toISOString(),
+      updated_at: formatDate(passenger.updated_at) || new Date().toISOString(),
+    }));
+  },
+
   // ============ BAG SETS ============
   async getBagSet(id: string): Promise<BagSet | null> {
     const { data, error } = await supabase
@@ -477,6 +509,22 @@ export const apiClient = {
       .from('boarding_passes')
       .select('*')
       .eq('pnr', pnr)
+      .order('created_at', { ascending: false });
+
+    if (error) handleSupabaseError(error);
+
+    return (data || []).map((pass) => ({
+      ...pass,
+      issued_at: formatDate(pass.issued_at),
+      created_at: formatDate(pass.created_at) || new Date().toISOString(),
+      updated_at: formatDate(pass.updated_at) || new Date().toISOString(),
+    }));
+  },
+
+  async getAllBoardingPasses(): Promise<BoardingPass[]> {
+    const { data, error } = await supabase
+      .from('boarding_passes')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) handleSupabaseError(error);

@@ -49,25 +49,41 @@ export function NotificationList({
   }, []);
 
   const loadNotifications = async () => {
-    const generated = await notificationService.generateNotifications(station);
-    const filtered = notificationService.filterExpired(generated);
-    
-    // Marquer comme lues celles qui étaient déjà lues
-    const withReadStatus = filtered.map((n) => ({
-      ...n,
-      read: readNotifications.has(n.id),
-    }));
-    
-    // Détecter et envoyer des push notifications pour les nouvelles alertes importantes
-    const currentNotificationIds = new Set(filtered.map((n) => n.id));
-    await notificationService.sendPushNotificationsForNewAlerts(
-      filtered,
-      previousNotificationIds
-    );
-    setPreviousNotificationIds(currentNotificationIds);
-    
-    setNotifications(withReadStatus);
-    setFilteredNotifications(withReadStatus);
+    try {
+      // Générer de nouvelles notifications et les sauvegarder dans Supabase
+      await notificationService.generateNotifications(station);
+      
+      // Charger les notifications depuis Supabase
+      const loadedNotifications = await notificationService.loadNotifications(station);
+      
+      // Marquer comme lues celles qui étaient déjà lues (depuis AsyncStorage)
+      const withReadStatus = loadedNotifications.map((n) => ({
+        ...n,
+        read: readNotifications.has(n.id),
+      }));
+      
+      // Détecter et envoyer des push notifications pour les nouvelles alertes importantes
+      const currentNotificationIds = new Set(loadedNotifications.map((n) => n.id));
+      await notificationService.sendPushNotificationsForNewAlerts(
+        loadedNotifications,
+        previousNotificationIds
+      );
+      setPreviousNotificationIds(currentNotificationIds);
+      
+      setNotifications(withReadStatus);
+      setFilteredNotifications(withReadStatus);
+    } catch (error) {
+      console.error('Erreur lors du chargement des notifications:', error);
+      // En cas d'erreur, générer les notifications localement
+      const generated = await notificationService.generateNotifications(station);
+      const filtered = notificationService.filterExpired(generated);
+      const withReadStatus = filtered.map((n) => ({
+        ...n,
+        read: readNotifications.has(n.id),
+      }));
+      setNotifications(withReadStatus);
+      setFilteredNotifications(withReadStatus);
+    }
   };
 
   useEffect(() => {
@@ -88,7 +104,14 @@ export function NotificationList({
   };
 
   const handleNotificationPress = async (notification: Notification) => {
-    // Marquer comme lue
+    // Marquer comme lue dans Supabase
+    try {
+      await notificationService.markAsRead(notification.id);
+    } catch (error) {
+      console.error('Erreur lors du marquage de la notification comme lue:', error);
+    }
+    
+    // Marquer comme lue localement
     const newReadSet = new Set(readNotifications).add(notification.id);
     setReadNotifications(newReadSet);
     
@@ -113,6 +136,18 @@ export function NotificationList({
 
   const handleMarkAllAsRead = async () => {
     const allIds = new Set(notifications.map(n => n.id));
+    
+    // Marquer toutes comme lues dans Supabase
+    try {
+      await Promise.all(
+        notifications
+          .filter(n => !n.read)
+          .map(n => notificationService.markAsRead(n.id))
+      );
+    } catch (error) {
+      console.error('Erreur lors du marquage de toutes les notifications comme lues:', error);
+    }
+    
     setReadNotifications(allIds);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     

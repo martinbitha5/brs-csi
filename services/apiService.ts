@@ -283,30 +283,16 @@ export const apiService = {
           }
         }
       } else if (pnr) {
-        const passengers = await apiClient.getPassengersByFlight(''); // On doit chercher différemment
-        // Pour l'instant, on fait une recherche simple
-        // TODO: Ajouter une méthode de recherche par PNR dans apiClient
-        const allFlights = await apiClient.getFlights();
-        for (const flight of allFlights) {
-          const flightPassengers = await apiClient.getPassengersByFlight(flight.id);
-          const found = flightPassengers.find((p) => p.pnr === pnr);
-          if (found) {
-            passenger = found;
-            break;
-          }
+        // Recherche par PNR
+        const passengersByPnr = await apiClient.getPassengersByPnr(pnr);
+        if (passengersByPnr.length > 0) {
+          passenger = passengersByPnr[0];
         }
       } else if (passengerName) {
         // Recherche par nom
-        const allFlights = await apiClient.getFlights();
-        for (const flight of allFlights) {
-          const flightPassengers = await apiClient.getPassengersByFlight(flight.id);
-          const found = flightPassengers.find((p) =>
-            p.name.toLowerCase().includes(passengerName.toLowerCase())
-          );
-          if (found) {
-            passenger = found;
-            break;
-          }
+        const passengersByName = await apiClient.getPassengersByName(passengerName);
+        if (passengersByName.length > 0) {
+          passenger = passengersByName[0];
         }
       }
 
@@ -587,8 +573,7 @@ export const apiService = {
 
   async getPendingSyncBoardingPasses(): Promise<BoardingPass[]> {
     try {
-      // TODO: Ajouter une méthode dans apiClient pour filtrer par sync_status
-      const allBoardingPasses = await apiClient.getBoardingPassesByPnr(''); // Nécessite une méthode différente
+      const allBoardingPasses = await apiClient.getAllBoardingPasses();
       return allBoardingPasses.filter((bp) => bp.sync_status === SyncStatus.PENDING_SYNC);
     } catch (error) {
       console.error('Erreur lors de la récupération des boarding passes:', error);

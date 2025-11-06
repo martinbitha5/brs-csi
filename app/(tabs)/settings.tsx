@@ -9,6 +9,8 @@ import { authService } from '@/services/authService';
 import { languageService, Language } from '@/services/languageService';
 import { UserRole } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import FAQ from '@/components/settings/FAQ';
+import ContactSupport from '@/components/settings/ContactSupport';
 
 const languages: { code: Language; name: string; nativeName: string; flag: string }[] = [
   { code: 'fr', name: 'Français', nativeName: 'Français', flag: '🇫🇷' },
@@ -36,6 +38,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const currentUser = authService.getCurrentUser();
   const [currentLanguage, setCurrentLanguage] = useState<Language>('fr');
+  const [activeSection, setActiveSection] = useState<'main' | 'faq' | 'support'>('main');
 
   useEffect(() => {
     // Charger la langue actuelle depuis AsyncStorage
@@ -136,6 +139,75 @@ export default function SettingsScreen() {
         <View style={styles.content}>
           <ThemedText>Non connecté</ThemedText>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Afficher FAQ ou Support si sélectionné
+  if (activeSection === 'faq') {
+    return (
+      <SafeAreaView style={[styles.container, dynamicStyles.container]} edges={['top']}>
+        <ThemedView style={dynamicStyles.header}>
+          <View style={styles.headerContent}>
+            <View style={styles.headerRow}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => setActiveSection('main')}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="arrow-back" size={24} color={isDark ? '#ECEDEE' : '#11181C'} />
+              </TouchableOpacity>
+              <View style={styles.titleContainer}>
+                <View style={styles.titleRow}>
+                  <Ionicons 
+                    name="help-circle" 
+                    size={28} 
+                    color={isDark ? '#ECEDEE' : '#11181C'} 
+                    style={styles.titleIcon}
+                  />
+                  <ThemedText type="title" style={styles.title}>
+                    FAQ
+                  </ThemedText>
+                </View>
+              </View>
+            </View>
+          </View>
+        </ThemedView>
+        <FAQ role={currentUser.role} />
+      </SafeAreaView>
+    );
+  }
+
+  if (activeSection === 'support') {
+    return (
+      <SafeAreaView style={[styles.container, dynamicStyles.container]} edges={['top']}>
+        <ThemedView style={dynamicStyles.header}>
+          <View style={styles.headerContent}>
+            <View style={styles.headerRow}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => setActiveSection('main')}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="arrow-back" size={24} color={isDark ? '#ECEDEE' : '#11181C'} />
+              </TouchableOpacity>
+              <View style={styles.titleContainer}>
+                <View style={styles.titleRow}>
+                  <Ionicons 
+                    name="headset" 
+                    size={28} 
+                    color={isDark ? '#ECEDEE' : '#11181C'} 
+                    style={styles.titleIcon}
+                  />
+                  <ThemedText type="title" style={styles.title}>
+                    Support
+                  </ThemedText>
+                </View>
+              </View>
+            </View>
+          </View>
+        </ThemedView>
+        <ContactSupport />
       </SafeAreaView>
     );
   }
@@ -292,6 +364,54 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Section Aide et Support */}
+        <View style={[styles.section, dynamicStyles.section]}>
+          <ThemedText type="defaultSemiBold" style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
+            Aide et Support
+          </ThemedText>
+          <ThemedText type="subtitle" style={[styles.sectionSubtitle, dynamicStyles.sectionSubtitle]}>
+            Besoin d'aide ? Consultez nos ressources
+          </ThemedText>
+
+          <TouchableOpacity
+            style={[styles.settingItem, dynamicStyles.settingItem]}
+            onPress={() => setActiveSection('faq')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.settingItemContent}>
+              <Ionicons name="help-circle" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
+              <View style={styles.settingItemTextContainer}>
+                <ThemedText style={[styles.settingItemLabel, dynamicStyles.sectionSubtitle]}>
+                  Questions fréquentes (FAQ)
+                </ThemedText>
+                <ThemedText style={[styles.settingItemValue, dynamicStyles.settingItemText]}>
+                  Trouvez des réponses à vos questions
+                </ThemedText>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.settingItem, dynamicStyles.settingItem]}
+            onPress={() => setActiveSection('support')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.settingItemContent}>
+              <Ionicons name="headset" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
+              <View style={styles.settingItemTextContainer}>
+                <ThemedText style={[styles.settingItemLabel, dynamicStyles.sectionSubtitle]}>
+                  Contact Support
+                </ThemedText>
+                <ThemedText style={[styles.settingItemValue, dynamicStyles.settingItemText]}>
+                  Contactez notre équipe de support
+                </ThemedText>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
         {/* Section Déconnexion */}
         <View style={[styles.section, dynamicStyles.section]}>
           <TouchableOpacity
@@ -334,6 +454,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+  },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
   },
   titleContainer: {
     flex: 1,

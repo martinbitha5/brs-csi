@@ -1,14 +1,14 @@
 // Service de gestion centralisée des erreurs
-// Fournit des fonctions utilitaires pour gérer les erreurs de manière cohérente
+// Fournit des messages d'erreur utilisateur-friendly et gère les erreurs réseau
 
 export enum ErrorType {
-  NETWORK = 'NETWORK',
-  VALIDATION = 'VALIDATION',
-  AUTHENTICATION = 'AUTHENTICATION',
-  AUTHORIZATION = 'AUTHORIZATION',
-  NOT_FOUND = 'NOT_FOUND',
-  SERVER = 'SERVER',
-  UNKNOWN = 'UNKNOWN',
+  NETWORK_ERROR = 'network_error',
+  AUTH_ERROR = 'auth_error',
+  VALIDATION_ERROR = 'validation_error',
+  NOT_FOUND = 'not_found',
+  PERMISSION_DENIED = 'permission_denied',
+  SERVER_ERROR = 'server_error',
+  UNKNOWN_ERROR = 'unknown_error',
 }
 
 export interface AppError {
@@ -16,186 +16,262 @@ export interface AppError {
   message: string;
   originalError?: any;
   code?: string;
-  retryable?: boolean;
+  statusCode?: number;
 }
 
 export class ErrorHandler {
   /**
-   * Crée une erreur formatée à partir d'une erreur inconnue
+   * Analyse une erreur et retourne un objet AppError structuré
    */
-  static createError(error: any, context?: string): AppError {
+  static parseError(error: any): AppError {
     // Erreur réseau
-    if (error?.message?.includes('network') || error?.message?.includes('Network')) {
+    if (error?.message?.includes('Network') || error?.message?.includes('fetch')) {
       return {
-        type: ErrorType.NETWORK,
-        message: 'Erreur de connexion réseau. Vérifiez votre connexion internet.',
+        type: ErrorType.NETWORK_ERROR,
+        message: 'Erreur de connexion. Vérifiez votre connexion internet.',
         originalError: error,
-        retryable: true,
       };
     }
 
-    // Erreur 401 - Non authentifié
-    if (error?.status === 401 || error?.code === 'UNAUTHENTICATED') {
-      return {
-        type: ErrorType.AUTHENTICATION,
-        message: 'Votre session a expiré. Veuillez vous reconnecter.',
-        originalError: error,
-        code: '401',
-        retryable: false,
-      };
+    // Erreur Supabase
+    if (error?.code) {
+      const supabaseError = this.parseSupabaseError(error);
+      if (supabaseError) return supabaseError;
     }
 
-    // Erreur 403 - Non autorisé
-    if (error?.status === 403 || error?.code === 'UNAUTHORIZED') {
-      return {
-        type: ErrorType.AUTHORIZATION,
-        message: 'Vous n\'avez pas les permissions nécessaires pour effectuer cette action.',
-        originalError: error,
-        code: '403',
-        retryable: false,
-      };
-    }
-
-    // Erreur 404 - Non trouvé
-    if (error?.status === 404 || error?.code === 'NOT_FOUND') {
-      return {
-        type: ErrorType.NOT_FOUND,
-        message: 'La ressource demandée n\'a pas été trouvée.',
-        originalError: error,
-        code: '404',
-        retryable: false,
-      };
-    }
-
-    // Erreur 500+ - Serveur
-    if (error?.status >= 500 || error?.code === 'SERVER_ERROR') {
-      return {
-        type: ErrorType.SERVER,
-        message: 'Une erreur serveur est survenue. Veuillez réessayer plus tard.',
-        originalError: error,
-        code: error?.status?.toString(),
-        retryable: true,
-      };
+    // Erreur HTTP
+    if (error?.status || error?.statusCode) {
+      return this.parseHttpError(error);
     }
 
     // Erreur de validation
     if (error?.message?.includes('validation') || error?.message?.includes('invalid')) {
       return {
-        type: ErrorType.VALIDATION,
-        message: error.message || 'Les données fournies ne sont pas valides.',
+        type: ErrorType.VALIDATION_ERROR,
+        message: error.message || 'Données invalides.',
         originalError: error,
-        retryable: false,
       };
     }
 
-    // Erreur avec message personnalisé
-    if (error?.message) {
-      return {
-        type: ErrorType.UNKNOWN,
-        message: error.message,
-        originalError: error,
-        retryable: false,
-      };
-    }
-
-    // Erreur inconnue par défaut
+    // Erreur inconnue
     return {
-      type: ErrorType.UNKNOWN,
-      message: context
-        ? `Une erreur est survenue lors de ${context}. Veuillez réessayer.`
-        : 'Une erreur inattendue est survenue. Veuillez réessayer.',
+      type: ErrorType.UNKNOWN_ERROR,
+      message: error?.message || 'Une erreur inattendue est survenue.',
       originalError: error,
-      retryable: false,
     };
+  }
+
+  /**
+   * Parse les erreurs Supabase
+   */
+  private static parseSupabaseError(error: any): AppError | null {
+    const code = error.code;
+    const message = error.message || '';
+
+    // Erreur d'authentification
+    if (code === 'PGRST301' || code === '42501' || message.includes('JWT')) {
+      return {
+        type: ErrorType.AUTH_ERROR,
+        message: 'Session expirée. Veuillez vous reconnecter.',
+        originalError: error,
+        code,
+      };
+    }
+
+    // Erreur de permission
+    if (code === '42501' || message.includes('permission') || message.includes('policy')) {
+      return {
+        type: ErrorType.PERMISSION_DENIED,
+        message: 'Vous n\'avez pas la permission d\'effectuer cette action.',
+        originalError: error,
+        code,
+      };
+    }
+
+    // Ressource non trouvée
+    if (code === 'PGRST116' || message.includes('not found')) {
+      return {
+        type: ErrorType.NOT_FOUND,
+        message: 'Ressource non trouvée.',
+        originalError: error,
+        code,
+      };
+    }
+
+    // Erreur de contrainte (doublon, etc.)
+    if (code === '23505' || message.includes('duplicate') || message.includes('unique')) {
+      return {
+        type: ErrorType.VALIDATION_ERROR,
+        message: 'Cette ressource existe déjà.',
+        originalError: error,
+        code,
+      };
+    }
+
+    // Erreur serveur
+    if (code?.startsWith('PGRST') || code?.startsWith('42')) {
+      return {
+        type: ErrorType.SERVER_ERROR,
+        message: 'Erreur serveur. Veuillez réessayer plus tard.',
+        originalError: error,
+        code,
+      };
+    }
+
+    return null;
+  }
+
+  /**
+   * Parse les erreurs HTTP
+   */
+  private static parseHttpError(error: any): AppError {
+    const status = error.status || error.statusCode;
+
+    switch (status) {
+      case 400:
+        return {
+          type: ErrorType.VALIDATION_ERROR,
+          message: 'Requête invalide. Vérifiez les données saisies.',
+          originalError: error,
+          statusCode: status,
+        };
+      case 401:
+        return {
+          type: ErrorType.AUTH_ERROR,
+          message: 'Non autorisé. Veuillez vous reconnecter.',
+          originalError: error,
+          statusCode: status,
+        };
+      case 403:
+        return {
+          type: ErrorType.PERMISSION_DENIED,
+          message: 'Accès refusé. Vous n\'avez pas les permissions nécessaires.',
+          originalError: error,
+          statusCode: status,
+        };
+      case 404:
+        return {
+          type: ErrorType.NOT_FOUND,
+          message: 'Ressource non trouvée.',
+          originalError: error,
+          statusCode: status,
+        };
+      case 500:
+      case 502:
+      case 503:
+        return {
+          type: ErrorType.SERVER_ERROR,
+          message: 'Erreur serveur. Veuillez réessayer plus tard.',
+          originalError: error,
+          statusCode: status,
+        };
+      default:
+        return {
+          type: ErrorType.UNKNOWN_ERROR,
+          message: error.message || 'Une erreur est survenue.',
+          originalError: error,
+          statusCode: status,
+        };
+    }
   }
 
   /**
    * Log une erreur pour le debugging
    */
   static logError(error: AppError, context?: string): void {
-    if (__DEV__) {
-      console.error(`[ErrorHandler] ${context || 'Erreur'}:`, {
-        type: error.type,
-        message: error.message,
-        code: error.code,
-        originalError: error.originalError,
-      });
-    }
-    // En production, envoyer à un service de logging (Sentry, etc.)
+    const logMessage = context
+      ? `[${context}] ${error.type}: ${error.message}`
+      : `${error.type}: ${error.message}`;
+
+    console.error(logMessage, {
+      code: error.code,
+      statusCode: error.statusCode,
+      originalError: error.originalError,
+    });
   }
 
   /**
-   * Affiche un message d'erreur utilisateur-friendly
+   * Retourne un message d'erreur utilisateur-friendly
    */
-  static getUserFriendlyMessage(error: AppError): string {
+  static getUserMessage(error: AppError): string {
     return error.message;
   }
 
   /**
-   * Vérifie si une erreur peut être réessayée
+   * Vérifie si une erreur est récupérable (peut être réessayée)
    */
   static isRetryable(error: AppError): boolean {
-    return error.retryable === true;
+    return (
+      error.type === ErrorType.NETWORK_ERROR ||
+      error.type === ErrorType.SERVER_ERROR ||
+      (error.statusCode && error.statusCode >= 500)
+    );
   }
 
   /**
-   * Retry une fonction avec gestion d'erreurs
+   * Retourne le délai recommandé avant un retry (en millisecondes)
    */
-  static async retry<T>(
-    fn: () => Promise<T>,
-    maxRetries: number = 3,
-    delay: number = 1000,
-    context?: string
-  ): Promise<T> {
-    let lastError: AppError | null = null;
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        return await fn();
-      } catch (error) {
-        lastError = this.createError(error, context);
-        this.logError(lastError, `${context} - Tentative ${attempt}/${maxRetries}`);
-
-        // Si ce n'est pas une erreur retryable, arrêter immédiatement
-        if (!this.isRetryable(lastError)) {
-          throw lastError;
-        }
-
-        // Si ce n'est pas la dernière tentative, attendre avant de réessayer
-        if (attempt < maxRetries) {
-          await new Promise((resolve) => setTimeout(resolve, delay * attempt));
-        }
-      }
-    }
-
-    // Si toutes les tentatives ont échoué
-    throw lastError || this.createError(new Error('Toutes les tentatives ont échoué'), context);
-  }
-
-  /**
-   * Wrapper pour les fonctions async avec gestion d'erreurs automatique
-   */
-  static async handleAsync<T>(
-    fn: () => Promise<T>,
-    context?: string,
-    onError?: (error: AppError) => void
-  ): Promise<{ success: true; data: T } | { success: false; error: AppError }> {
-    try {
-      const data = await fn();
-      return { success: true, data };
-    } catch (error) {
-      const appError = this.createError(error, context);
-      this.logError(appError, context);
-
-      if (onError) {
-        onError(appError);
-      }
-
-      return { success: false, error: appError };
-    }
+  static getRetryDelay(attempt: number): number {
+    // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
+    return Math.min(1000 * Math.pow(2, attempt), 30000);
   }
 }
 
-// Export d'une instance par défaut pour faciliter l'utilisation
-export const errorHandler = ErrorHandler;
+/**
+ * Wrapper pour exécuter une fonction avec gestion d'erreur automatique
+ */
+export async function withErrorHandling<T>(
+  fn: () => Promise<T>,
+  context?: string
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    const appError = ErrorHandler.parseError(error);
+    ErrorHandler.logError(appError, context);
+    throw appError;
+  }
+}
 
+/**
+ * Retry une fonction avec gestion d'erreur et backoff exponentiel
+ */
+export async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  context?: string
+): Promise<T> {
+  let lastError: AppError | null = null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const appError = ErrorHandler.parseError(error);
+
+      // Si l'erreur n'est pas récupérable, arrêter immédiatement
+      if (!ErrorHandler.isRetryable(appError)) {
+        throw appError;
+      }
+
+      lastError = appError;
+
+      // Si ce n'est pas la dernière tentative, attendre avant de réessayer
+      if (attempt < maxAttempts - 1) {
+        const delay = ErrorHandler.getRetryDelay(attempt);
+        ErrorHandler.logError(
+          appError,
+          `${context || 'Retry'} - Tentative ${attempt + 1}/${maxAttempts} dans ${delay}ms`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  // Si toutes les tentatives ont échoué, lancer la dernière erreur
+  if (lastError) {
+    throw lastError;
+  }
+
+  throw ErrorHandler.parseError(new Error('Toutes les tentatives ont échoué'));
+}

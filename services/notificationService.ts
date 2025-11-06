@@ -14,6 +14,7 @@ import {
 } from '@/types';
 import { apiService } from './apiService';
 import { pushNotificationService } from './pushNotificationService';
+import { apiClient } from './apiClient';
 
 // Génération d'ID UUID simple
 const generateId = (): string => {
@@ -90,13 +91,43 @@ export const notificationService = {
   },
 
   /**
-   * Génère des notifications à partir des détections
+   * Génère des notifications à partir des détections et les sauvegarde dans Supabase
    * @param station - Station optionnelle pour filtrer
    * @returns Liste des notifications générées
    */
   generateNotifications: async (station?: string): Promise<Notification[]> => {
     const notifications: Notification[] = [];
     const now = new Date();
+
+    // Détecter les vols qui partent bientôt
+    const flights = await apiService.getFlights();
+    const DEPARTURE_WARNING_MINUTES = 120; // 2 heures
+
+    for (const flight of flights) {
+      const flightDate = new Date(flight.date);
+      const minutesUntilDeparture = (flightDate.getTime() - now.getTime()) / (1000 * 60);
+      
+      if (minutesUntilDeparture > 0 && minutesUntilDeparture <= DEPARTURE_WARNING_MINUTES) {
+        if (!notifications.some((n) => n.flight_id === flight.id && n.type === NotificationType.FLIGHT_DEPARTING_SOON)) {
+          const priority = minutesUntilDeparture <= 60 
+            ? NotificationPriority.HIGH 
+            : NotificationPriority.MEDIUM;
+          
+          notifications.push({
+            id: generateId(),
+            type: NotificationType.FLIGHT_DEPARTING_SOON,
+            priority,
+            title: `Vol ${flight.code} - Départ imminent`,
+            message: `Le vol ${flight.code}${flight.route ? ` (${flight.route})` : ''} part dans ${Math.round(minutesUntilDeparture)} minute(s).`,
+            flight_id: flight.id,
+            station: station,
+            read: false,
+            created_at: now.toISOString(),
+            expires_at: flightDate.toISOString(),
+          });
+        }
+      }
+    }
 
     // Détecter les vols à clôturer avec bagages manquants
     const flightClosingAlerts = await notificationService.checkFlightsClosingWithMissingBags(
@@ -174,6 +205,40 @@ export const notificationService = {
       }
     }
 
+    // Détecter les bagages manquants
+    const missingBagPieces = await apiService.getMissingBagPieces(undefined, station);
+    for (const bagPiece of missingBagPieces) {
+      const bagSet = await apiService.getBagSet(bagPiece.bag_set_id);
+      if (!bagSet) continue;
+      
+      const passenger = await apiService.getPassenger(bagSet.passenger_id);
+      const flight = await apiService.getFlight(bagSet.flight_id);
+      
+      if (flight && !notifications.some((n) => n.bag_piece_id === bagPiece.id)) {
+        // Déterminer la priorité selon le contexte
+        const flightDate = new Date(flight.date);
+        const minutesUntilDeparture = (flightDate.getTime() - now.getTime()) / (1000 * 60);
+        const priority = minutesUntilDeparture <= 60
+          ? NotificationPriority.URGENT
+          : NotificationPriority.HIGH;
+        
+        notifications.push({
+          id: generateId(),
+          type: NotificationType.BAG_MISSING,
+          priority,
+          title: `Bagage manquant - ${bagPiece.tag_full}`,
+          message: `Le bagage ${bagPiece.tag_full}${passenger ? ` de ${passenger.name}` : ''}${flight ? ` (Vol ${flight.code})` : ''} est marqué comme manquant.`,
+          flight_id: flight.id,
+          bag_set_id: bagSet.id,
+          bag_piece_id: bagPiece.id,
+          station: station,
+          read: false,
+          created_at: now.toISOString(),
+          expires_at: new Date(now.getTime() + NOTIFICATION_EXPIRY_HOURS * 60 * 60 * 1000).toISOString(),
+        });
+      }
+    }
+
     return notifications.sort((a, b) => {
       // Trier par priorité puis par date
       const priorityOrder = {
@@ -190,14 +255,96 @@ export const notificationService = {
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
     });
+
+    // Sauvegarder les notifications dans Supabase (éviter les doublons)
+    await notificationService.persistNotifications(notifications, station);
+
+    return notifications;
   },
 
   /**
-   * Marque une notification comme lue
+   * Sauvegarde les notifications dans Supabase en évitant les doublons
+   * @param notifications - Liste des notifications à sauvegarder
+   * @param station - Station optionnelle pour filtrer
    */
-  markAsRead: (notificationId: string): void => {
-    // Dans une vraie implémentation, cela mettrait à jour la base de données
-    // Pour l'instant, c'est géré par le composant qui maintient l'état local
+  persistNotifications: async (
+    notifications: Notification[],
+    station?: string
+  ): Promise<void> => {
+    try {
+      // Charger les notifications existantes pour éviter les doublons
+      const existingNotifications = await apiClient.getNotifications({
+        station,
+        read: false,
+      });
+
+      const existingIds = new Set(
+        existingNotifications.map((n) => {
+          // Créer un identifiant unique basé sur le type et les références
+          return `${n.type}-${n.flight_id || ''}-${n.bag_set_id || ''}-${n.bag_piece_id || ''}`;
+        })
+      );
+
+      // Filtrer les nouvelles notifications qui n'existent pas déjà
+      const newNotifications = notifications.filter((n) => {
+        const uniqueId = `${n.type}-${n.flight_id || ''}-${n.bag_set_id || ''}-${n.bag_piece_id || ''}`;
+        return !existingIds.has(uniqueId);
+      });
+
+      // Sauvegarder les nouvelles notifications
+      for (const notification of newNotifications) {
+        try {
+          await apiClient.createNotification({
+            type: notification.type,
+            priority: notification.priority,
+            title: notification.title,
+            message: notification.message,
+            flight_id: notification.flight_id,
+            bag_set_id: notification.bag_set_id,
+            bag_piece_id: notification.bag_piece_id,
+            station: notification.station,
+            read: notification.read,
+            expires_at: notification.expires_at,
+          });
+        } catch (error) {
+          // Ignorer les erreurs de création (peut être un doublon)
+          console.debug('Erreur lors de la création de la notification:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la persistance des notifications:', error);
+      // Ne pas bloquer si la persistance échoue
+    }
+  },
+
+  /**
+   * Charge les notifications depuis Supabase
+   * @param station - Station optionnelle pour filtrer
+   * @returns Liste des notifications chargées
+   */
+  loadNotifications: async (station?: string): Promise<Notification[]> => {
+    try {
+      const notifications = await apiClient.getNotifications({
+        station,
+      });
+
+      // Filtrer les notifications expirées
+      return notificationService.filterExpired(notifications);
+    } catch (error) {
+      console.error('Erreur lors du chargement des notifications:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Marque une notification comme lue dans Supabase
+   */
+  markAsRead: async (notificationId: string): Promise<void> => {
+    try {
+      await apiClient.updateNotification(notificationId, { read: true });
+    } catch (error) {
+      console.error('Erreur lors du marquage de la notification comme lue:', error);
+    }
   },
 
   /**
