@@ -78,10 +78,15 @@ export default function RegisterScreen() {
           ]
         );
       } else {
-        Alert.alert(t('register.error.failed'), result.error || t('register.error.generic'));
+        // Afficher le message d'erreur spécifique retourné par authService
+        const errorMessage = result.error || t('register.error.generic');
+        Alert.alert(t('register.error.failed'), errorMessage);
       }
-    } catch (error) {
-      Alert.alert(t('common.error'), t('register.error.generic'));
+    } catch (error: any) {
+      // Gérer les erreurs non capturées par authService
+      console.error('Erreur lors de l\'inscription:', error);
+      const errorMessage = error?.message || error?.error || t('register.error.generic');
+      Alert.alert(t('common.error'), errorMessage);
     } finally {
       setLoading(false);
     }

@@ -765,6 +765,143 @@ export const apiClient = {
     };
   },
 
+  // Fonction pour l'inscription publique (utilise une fonction PostgreSQL qui bypass RLS)
+  async registerUser(
+    name: string,
+    email: string,
+    password: string,
+    role: string,
+    station: string | null,
+    language: string | undefined
+  ): Promise<User> {
+    try {
+      const { data, error } = await supabase.rpc('register_user', {
+        p_name: name,
+        p_email: email,
+        p_password: password,
+        p_role: role,
+        p_station: station,
+        p_language: language || null,
+      });
+
+      if (error) {
+        // Si la fonction n'existe pas, utiliser la méthode classique
+        if (error.message?.includes('function') || 
+            error.message?.includes('does not exist') ||
+            error.code === '42883' ||
+            error.code === 'P0001') {
+          console.warn('Fonction register_user non trouvée, utilisation de la méthode classique');
+          // Fallback vers la méthode classique
+          try {
+            const newUser = await this.createUser({
+              name,
+              email,
+              role: role as any,
+              station,
+              language: language as any,
+            });
+            await this.setUserPassword(newUser.id, password);
+            return newUser;
+          } catch (fallbackError: any) {
+            // Si le fallback échoue aussi, propager l'erreur originale de la fonction RPC
+            throw new ApiError(
+              error.message || 'Erreur lors de l\'inscription. Veuillez vérifier que la migration SQL a été appliquée.',
+              error.code ? parseInt(error.code) : 500,
+              error.code
+            );
+          }
+        }
+        
+        // Extraire le message d'erreur PostgreSQL si disponible
+        let errorMessage = error.message || 'Erreur lors de l\'inscription';
+        
+        // Les erreurs PostgreSQL personnalisées sont souvent dans error.details ou error.hint
+        if (error.details) {
+          errorMessage = error.details;
+        } else if (error.hint) {
+          errorMessage = error.hint;
+        }
+        
+        // Gérer les erreurs spécifiques de la fonction register_user
+        if (errorMessage.includes('déjà utilisé') || 
+            errorMessage.includes('duplicate') || 
+            errorMessage.includes('unique') ||
+            error.code === '23505') {
+          throw new ApiError('Cet email est déjà utilisé.', 400, error.code);
+        }
+        
+        if (errorMessage.includes('Rôle invalide') || 
+            errorMessage.includes('rôle invalide')) {
+          throw new ApiError(errorMessage, 400, error.code);
+        }
+        
+        if (errorMessage.includes('station assignée') || 
+            errorMessage.includes('station')) {
+          throw new ApiError(errorMessage, 400, error.code);
+        }
+        
+        // Autres erreurs de la fonction RPC
+        throw new ApiError(errorMessage, error.code ? parseInt(error.code) : 500, error.code);
+      }
+
+      // La fonction RPC retourne un objet JSON
+      if (!data || typeof data !== 'object') {
+        throw new ApiError('Aucune donnée retournée lors de l\'inscription. Veuillez réessayer.', 500);
+      }
+
+      const userData = data as any;
+      if (!userData.id) {
+        throw new ApiError('Données invalides retournées lors de l\'inscription. Veuillez réessayer.', 500);
+      }
+
+      return {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role as any,
+        station: userData.station,
+        language: userData.language as any,
+        created_at: formatDate(userData.created_at) || new Date().toISOString(),
+        updated_at: formatDate(userData.updated_at) || new Date().toISOString(),
+      };
+    } catch (error: any) {
+      // Si c'est une erreur ApiError, la relancer
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      
+      // Si c'est une erreur de permission RLS, donner un message plus clair
+      if (error?.code === '42501' || 
+          error?.message?.includes('permission') ||
+          error?.message?.includes('policy') ||
+          error?.message?.includes('RLS')) {
+        throw new ApiError(
+          'Erreur de configuration serveur. Veuillez contacter l\'administrateur ou vérifier que la migration SQL a été appliquée.',
+          500,
+          error.code
+        );
+      }
+      
+      // Sinon, essayer le fallback seulement si ce n'est pas une erreur critique
+      console.warn('Erreur lors de l\'appel à register_user:', error);
+      
+      // Ne pas utiliser le fallback si c'est une erreur de validation ou de contrainte
+      if (error?.code === '23505' || 
+          error?.message?.includes('duplicate') ||
+          error?.message?.includes('unique') ||
+          error?.message?.includes('déjà utilisé')) {
+        throw new ApiError('Cet email est déjà utilisé.', 400, error.code);
+      }
+      
+      // Propager l'erreur avec un message clair
+      throw new ApiError(
+        error?.message || 'Erreur lors de l\'inscription. Veuillez réessayer plus tard.',
+        error?.code ? parseInt(error.code) : 500,
+        error?.code
+      );
+    }
+  },
+
   async updateUser(
     id: string,
     updates: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>

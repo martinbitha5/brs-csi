@@ -207,17 +207,16 @@ export const authService = {
         userLanguage = await languageService.loadStoredLanguage();
       }
 
-      // Créer l'utilisateur dans Supabase
-      const newUser = await apiClient.createUser({
+      // Utiliser la fonction register_user qui bypass RLS pour l'inscription publique
+      // Si la fonction n'existe pas, elle utilisera automatiquement la méthode classique
+      const newUser = await apiClient.registerUser(
         name,
         email,
+        password,
         role,
         station,
-        language: userLanguage,
-      });
-
-      // Sauvegarder le mot de passe dans Supabase
-      await apiClient.setUserPassword(newUser.id, password);
+        userLanguage
+      );
 
       // Sauvegarder la langue dans AsyncStorage
       if (userLanguage) {
@@ -230,21 +229,54 @@ export const authService = {
       };
     } catch (error: any) {
       console.error('Erreur lors de l\'inscription:', error);
+      console.error('Détails de l\'erreur:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
       
       // Gérer spécifiquement les erreurs d'inscription
       let errorMessage = 'Une erreur est survenue lors de l\'inscription.';
       
-      if (error.message) {
-        // Si le message contient "Session expirée", c'est probablement une erreur RLS
-        if (error.message.includes('Session expirée') || error.message.includes('JWT') || 
-            error.code === 'PGRST301' || error.code === '42501') {
-          errorMessage = 'Erreur de configuration serveur. Veuillez contacter l\'administrateur.';
-        } else if (error.message.includes('duplicate') || error.message.includes('unique') || 
-                   error.code === '23505') {
-          errorMessage = 'Cet email est déjà utilisé.';
-        } else {
-          errorMessage = error.message;
-        }
+      // Si c'est une ApiError, utiliser son message directement
+      if (error.message && typeof error.message === 'string') {
+        errorMessage = error.message;
+      } else if (error.details) {
+        errorMessage = error.details;
+      } else if (error.hint) {
+        errorMessage = error.hint;
+      }
+      
+      // Messages d'erreur spécifiques
+      if (errorMessage.includes('déjà utilisé') || 
+          errorMessage.includes('duplicate') || 
+          errorMessage.includes('unique') || 
+          error.code === '23505') {
+        errorMessage = 'Cet email est déjà utilisé.';
+      } 
+      // Erreur de validation
+      else if (errorMessage.includes('validation') || 
+               errorMessage.includes('invalid') ||
+               errorMessage.includes('Rôle invalide') ||
+               errorMessage.includes('station assignée')) {
+        // Garder le message tel quel car il est déjà explicite
+      }
+      // Erreur RLS ou de permission
+      else if (errorMessage.includes('Session expirée') || 
+               errorMessage.includes('JWT') || 
+               errorMessage.includes('permission') ||
+               errorMessage.includes('policy') ||
+               errorMessage.includes('RLS') ||
+               error.code === 'PGRST301' || 
+               error.code === '42501') {
+        errorMessage = 'Erreur de configuration serveur. Veuillez contacter l\'administrateur ou vérifier que la migration SQL a été appliquée.';
+      }
+      // Erreur réseau
+      else if (errorMessage.includes('Network') || 
+               errorMessage.includes('fetch') ||
+               errorMessage.includes('connexion')) {
+        errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
       }
       
       return {
