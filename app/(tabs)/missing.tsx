@@ -11,10 +11,12 @@ import { BagPiece, Flight, UserRole, BagSet } from '@/types';
 import { AIRPORTS } from '@/constants/airports';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function MissingBaggageScreen() {
   const currentUser = authService.getCurrentUser();
   const isAgent = currentUser?.role === UserRole.AGENT;
+  const { t } = useTranslation();
   const [currentStation, setCurrentStation] = useState<string>(
     currentUser?.station || AIRPORTS[0].code
   );
@@ -106,11 +108,11 @@ export default function MissingBaggageScreen() {
               style={styles.titleIcon}
             />
             <ThemedText type="title" style={styles.title}>
-              Bagages manquants
+              {t('missing.title')}
             </ThemedText>
           </View>
           <ThemedText type="subtitle" style={styles.subtitle}>
-            Liste des bagages manquants par vol
+            {t('missing.subtitle')}
           </ThemedText>
           <View style={styles.stationSelectorContainer}>
             {isAgent ? (
@@ -199,18 +201,20 @@ export default function MissingBaggageScreen() {
           <ThemedView style={styles.emptyState}>
             <Ionicons name="checkmark-circle-outline" size={64} color="#10B981" />
             <ThemedText type="defaultSemiBold" style={styles.emptyTitle}>
-              Aucun bagage manquant
+              {t('missing.empty')}
             </ThemedText>
             <ThemedText style={styles.emptyText}>
               {selectedFlightId
-                ? 'Aucun bagage manquant pour ce vol.'
-                : 'Aucun bagage manquant dans cette station.'}
+                ? t('missing.empty.flight')
+                : t('missing.empty.station')}
             </ThemedText>
           </ThemedView>
         ) : (
           <>
             <ThemedText type="subtitle" style={styles.countText}>
-              {missingBagPieces.length} bagage{missingBagPieces.length > 1 ? 's' : ''} manquant{missingBagPieces.length > 1 ? 's' : ''}
+              {t('missing.count')
+                .replace('{count}', missingBagPieces.length.toString())
+                .replace(/{plural}/g, missingBagPieces.length > 1 ? 's' : '')}
             </ThemedText>
             {missingBagPieces.map((bagPiece) => {
               const bagSet = bagPiece.bag_set_id

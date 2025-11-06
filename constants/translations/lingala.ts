@@ -70,6 +70,80 @@ export const translations = {
   'settings.logout.message': 'Ozali na ntembe te olingi kobima?',
   'settings.logout.cancel': 'Kolongola',
   
+  // Home
+  'home.subtitle': 'Sistème ya Kolanda Bilanga',
+  'home.urgentAlerts': 'Bilenge ya Ntina',
+  'home.seeAll': 'Komona nyonso',
+  'home.quickActions': 'Misala ya Ntango',
+  'home.scanBaggage': 'Kosukola bilanga',
+  'home.scanBaggage.description': 'Sukola to kotya nimero ya bilanga mpo na kobongisa esika na yango',
+  'home.scanBoardingPass': 'Kosukola karta ya kokota na avio',
+  'home.scanBoardingPass.description': 'Sukola QR code ya karta ya kokota na avio mpo na kosangisa bilanga',
+  'home.searchBaggage': 'Koluka bilanga',
+  'home.searchBaggage.description': 'Luka bilanga na nimero to PNR mpo na komona esika na yango',
+  'home.missingBags': 'Bilanga ya libungi',
+  'home.missingBags.description': 'Komona listi ya bilanga ya libungi na mbangu',
+  'home.activityHistory': 'Mokolo ya misala',
+  'home.activityHistory.description': 'Komona mokolo ya misukoli mpe misala',
+  'home.importData': 'Kokota makambo',
+  'home.importData.description': 'Kotya makambo kowuta na fisié CSV to Excel',
+  'home.about': 'Etali',
+  'home.about.description1': 'BRS-CSI (Baggage Reconciliation System – Cargo System Integration) ezali sistème ya kolanda bilanga mpo na ba aéroports ya African Transport Systems (ATS) na RDC.',
+  'home.about.description2': 'Application oyo ezali kotinda bilanga bwa moko kowuta na enregistrement tii na livraison, na kokanga ba lots ya bilanga mpe kolanda na ntango ya solo.',
+  
+  // Search
+  'search.title': 'Koluka',
+  'search.subtitle': 'Luka bilanga na tag to PNR',
+  
+  // Scan
+  'scan.title': 'Kosukola',
+  'scan.baggage.placeholder': 'Sukola tag ya bilanga',
+  'scan.boardingPass.placeholder': 'Sukola karta ya kokota na avio',
+  'scan.showHistory': 'Komona mokolo',
+  'scan.hideHistory': 'Kobomba mokolo',
+  'scan.error.boardingPass': 'Ekoki te kosukola karta ya kokota',
+  'scan.success.title': 'Kosukola esali malamu',
+  'scan.success.baggage': 'Bilanga {tagFull} esukoli malamu.\nEsika: {status}',
+  'scan.success.boardingPass': 'Karta ya kokota esukoli malamu.\n{count} bilanga{plural} esangisi{plural}.',
+  'scan.success.boardingPass.noBags': 'Karta ya kokota esukoli malamu.\nBilanga te.',
+  'scan.error.generic': 'Mbongo esalaki',
+  'scan.mode.baggage': 'Bilanga',
+  'scan.mode.boardingPass': 'Karta ya kokota',
+  'scan.result.lastScanned': 'Bilanga ya suka esukoli',
+  'scan.result.boardingPassScanned': 'Karta ya kokota esukoli',
+  
+  // Missing
+  'missing.title': 'Bilanga ya libungi',
+  'missing.subtitle': 'Listi ya bilanga ya libungi na mbangu',
+  'missing.empty': 'Bilanga ya libungi te',
+  'missing.empty.flight': 'Bilanga ya libungi te na mbangu oyo.',
+  'missing.empty.station': 'Bilanga ya libungi te na esika oyo.',
+  'missing.count': '{count} bilanga{plural} ya libungi{plural}',
+  
+  // Notifications
+  'notifications.title': 'Bilenge',
+  'notifications.subtitle': 'Bilenge mpe bilenge ya ntango ya solo',
+  
+  // Missing
+  'missing.title': 'Bilanga ya libungi',
+  'missing.subtitle': 'Listi ya bilanga ya libungi na mbangu',
+  
+  // Activity
+  'activity.title': 'Misala',
+  'activity.subtitle': 'Mokolo ya misukoli mpe misala',
+  
+  // FAQ
+  'faq.title': 'Mituna ya Bato Mingi (FAQ)',
+  'faq.subtitle': 'Wana mbano na mituna na yo nyonso',
+  
+  // Tabs
+  'tabs.home': 'Esika',
+  'tabs.scan': 'Kosukola',
+  'tabs.missing': 'Libungi',
+  'tabs.activity': 'Misala',
+  'tabs.supervisor': 'Kokengela',
+  'tabs.settings': 'Makambo',
+  
   // Common
   'common.ok': 'Malamu',
   'common.error': 'Mbongo',

@@ -9,6 +9,14 @@ const DEFAULT_LANGUAGE: Language = 'fr';
 
 let currentLanguage: Language = DEFAULT_LANGUAGE;
 
+// Système d'événements pour notifier les changements de langue
+type LanguageChangeListener = (language: Language) => void;
+const listeners: Set<LanguageChangeListener> = new Set();
+
+const notifyListeners = (language: Language) => {
+  listeners.forEach(listener => listener(language));
+};
+
 export const languageService = {
   // Charger la langue depuis le stockage
   loadStoredLanguage: async (): Promise<Language> => {
@@ -29,6 +37,8 @@ export const languageService = {
     try {
       currentLanguage = language;
       await AsyncStorage.setItem(STORAGE_KEY, language);
+      // Notifier tous les listeners du changement
+      notifyListeners(language);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de la langue:', error);
     }
@@ -47,6 +57,14 @@ export const languageService = {
     } catch (error) {
       return false;
     }
+  },
+
+  // S'abonner aux changements de langue
+  subscribe: (listener: LanguageChangeListener): (() => void) => {
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
   },
 };
 

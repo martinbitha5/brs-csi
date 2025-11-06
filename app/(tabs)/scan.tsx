@@ -13,6 +13,7 @@ import { AIRPORTS } from '@/constants/airports';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/use-translation';
 import * as Haptics from 'expo-haptics';
 
 type ScanMode = 'baggage' | 'boarding_pass';
@@ -20,6 +21,7 @@ type ScanMode = 'baggage' | 'boarding_pass';
 export default function ScanScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const initialMode: ScanMode = params.mode === 'boarding_pass' ? 'boarding_pass' : 'baggage';
   const [scanMode, setScanMode] = useState<ScanMode>(initialMode);
   const [scannedBagPiece, setScannedBagPiece] = useState<BagPiece | null>(null);
@@ -108,15 +110,15 @@ export default function ScanScreen() {
         }
         
         Alert.alert(
-          'Scan réussi',
-          `Bagage ${tagFull} scanné avec succès.\nStatut: ${result.bagPiece.status}`,
-          [{ text: 'OK' }]
+          t('scan.success.title'),
+          t('scan.success.baggage').replace('{tagFull}', tagFull).replace('{status}', result.bagPiece.status),
+          [{ text: t('common.ok') }]
         );
       }
     } else {
       // Feedback haptique pour erreur
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Erreur', result.error || 'Une erreur est survenue');
+      Alert.alert(t('common.error'), result.error || t('scan.error.generic'));
       setScannedBagPiece(null);
       setBagSet(null);
     }
@@ -136,15 +138,16 @@ export default function ScanScreen() {
       setShowHistory(false);
       
       const bagCount = result.result.associatedBagPieces.length;
+      const plural = bagCount > 1 ? 's' : '';
       const message = bagCount > 0
-        ? `Boarding pass scanné avec succès.\n${bagCount} bagage${bagCount > 1 ? 's' : ''} associé${bagCount > 1 ? 's' : ''}.`
-        : 'Boarding pass scanné avec succès.\nAucun bagage trouvé.';
+        ? t('scan.success.boardingPass').replace('{count}', bagCount.toString()).replace(/{plural}/g, plural)
+        : t('scan.success.boardingPass.noBags');
       
-      Alert.alert('Scan réussi', message, [{ text: 'OK' }]);
+      Alert.alert(t('scan.success.title'), message, [{ text: t('common.ok') }]);
     } else {
       // Feedback haptique pour erreur
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Erreur', ('error' in result ? result.error : 'Impossible de scanner le boarding pass') || 'Impossible de scanner le boarding pass');
+      Alert.alert(t('common.error'), ('error' in result ? result.error : t('scan.error.boardingPass')) || t('scan.error.boardingPass'));
       setScannedBoardingPass(null);
     }
   };
@@ -159,15 +162,15 @@ export default function ScanScreen() {
 
   const dynamicStyles = {
     container: {
-      backgroundColor: isDark ? '#000000' : '#FFFFFF',
+      backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
     },
     header: {
       ...styles.header,
-      backgroundColor: isDark ? '#151718' : '#FFFFFF',
-      borderBottomColor: isDark ? '#2A2A2A' : '#E5E7EB',
+      backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+      borderBottomColor: isDark ? '#334155' : '#E2E8F0',
     },
     headerContent: {
-      backgroundColor: isDark ? '#151718' : '#FFFFFF',
+      backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
     },
   };
 
@@ -183,16 +186,17 @@ export default function ScanScreen() {
               style={styles.titleIcon}
             />
             <ThemedText type="title" style={styles.title}>
-              Scanner
+              {t('scan.title')}
             </ThemedText>
           </View>
           <ThemedText type="subtitle" style={styles.subtitle}>
-            Scannez un bagage ou une carte d'embarquement
+            {scanMode === 'baggage' ? t('home.scanBaggage') : t('home.scanBoardingPass')}
           </ThemedText>
           <View style={styles.stationSelectorContainer}>
             {/* Pour les agents, afficher la station en lecture seule */}
             <View style={[styles.stationDisplay, { 
-              backgroundColor: isDark ? '#1F1F1F' : '#F3F4F6' 
+              backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
             }]}>
               <Ionicons name="location" size={20} color="#3B82F6" />
               <ThemedText style={[styles.stationDisplayText, {
@@ -220,7 +224,7 @@ export default function ScanScreen() {
               color={scanMode === 'baggage' ? '#FFF' : '#6B7280'} 
             />
             <ThemedText style={[styles.modeButtonText, scanMode === 'baggage' && styles.modeButtonTextActive]}>
-              Bagage
+              {t('scan.mode.baggage')}
             </ThemedText>
           </TouchableOpacity>
           
@@ -237,7 +241,7 @@ export default function ScanScreen() {
               color={scanMode === 'boarding_pass' ? '#FFF' : '#6B7280'} 
             />
             <ThemedText style={[styles.modeButtonText, scanMode === 'boarding_pass' && styles.modeButtonTextActive]}>
-              Carte d'embarquement
+              {t('scan.mode.boardingPass')}
             </ThemedText>
           </TouchableOpacity>
         </View>
@@ -247,7 +251,7 @@ export default function ScanScreen() {
         <ScanInput 
           onScan={handleScan} 
           autoFocus 
-          placeholder={scanMode === 'baggage' ? 'Scanner un tag bagage' : 'Scanner une carte d\'embarquement'}
+          placeholder={scanMode === 'baggage' ? t('scan.baggage.placeholder') : t('scan.boardingPass.placeholder')}
         />
       </View>
 
@@ -255,7 +259,7 @@ export default function ScanScreen() {
         {scannedBagPiece && (
           <>
             <ThemedText type="subtitle" style={styles.resultTitle}>
-              Dernier bagage scanné
+              {t('scan.result.lastScanned')}
             </ThemedText>
             <BaggageCard bagPiece={scannedBagPiece} bagSet={bagSet || undefined} />
             
@@ -276,7 +280,7 @@ export default function ScanScreen() {
                     color="#3B82F6" 
                   />
                   <ThemedText style={styles.historyToggleText}>
-                    {showHistory ? 'Masquer' : 'Afficher'} l'historique
+                    {showHistory ? t('scan.hideHistory') : t('scan.showHistory')}
                   </ThemedText>
                 </TouchableOpacity>
                 
@@ -294,7 +298,7 @@ export default function ScanScreen() {
         {scannedBoardingPass && (
           <>
             <ThemedText type="subtitle" style={styles.resultTitle}>
-              Carte d'embarquement scannée
+              {t('scan.result.boardingPassScanned')}
             </ThemedText>
             <BoardingPassCard
               boardingPass={scannedBoardingPass.boardingPass}
@@ -315,14 +319,14 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: Platform.OS === 'ios' ? 8 : 16,
-    paddingBottom: 16,
+    paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   headerContent: {
     paddingTop: 8,
@@ -336,16 +340,17 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '700',
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
   },
   subtitle: {
-    marginTop: 4,
+    marginTop: 6,
     marginLeft: 40,
     fontSize: 15,
-    opacity: 0.7,
-    lineHeight: 20,
+    opacity: 0.75,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   stationSelectorContainer: {
     marginTop: 12,
@@ -353,10 +358,11 @@ const styles = StyleSheet.create({
   stationDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    gap: 10,
+    borderWidth: 1,
   },
   stationDisplayText: {
     fontSize: 15,
@@ -373,14 +379,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   modeButtonActive: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
   },
   modeButtonText: {
     fontSize: 14,
@@ -391,16 +400,20 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   scanSection: {
-    padding: 16,
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
   },
   resultContainer: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   resultTitle: {
-    marginBottom: 12,
+    marginBottom: 16,
+    fontSize: 20,
+    fontWeight: '600',
+    letterSpacing: -0.4,
   },
   historyToggle: {
     flexDirection: 'row',

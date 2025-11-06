@@ -6,12 +6,14 @@ import { ThemedText } from '@/components/themed-text';
 import { ActivityHistory } from '@/components/agent/ActivityHistory';
 import { authService } from '@/services/authService';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/use-translation';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ActivityScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const currentUser = authService.getCurrentUser();
+  const { t } = useTranslation();
 
   const dynamicStyles = {
     container: {
@@ -36,11 +38,11 @@ export default function ActivityScreen() {
               style={styles.titleIcon}
             />
             <ThemedText type="title" style={styles.title}>
-              Activités
+              {t('activity.title')}
             </ThemedText>
           </View>
           <ThemedText type="subtitle" style={styles.subtitle}>
-            Historique des scans et activités
+            {t('activity.subtitle')}
           </ThemedText>
         </View>
       </ThemedView>

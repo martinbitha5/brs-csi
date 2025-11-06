@@ -15,11 +15,13 @@ import { AIRPORTS } from '@/constants/airports';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const router = useRouter();
+  const { t } = useTranslation();
   const currentUser = authService.getCurrentUser();
   const agentId = currentUser?.id || '';
   // Pour les agents, la station est fixe (celle choisie à l'inscription)
@@ -98,20 +100,20 @@ export default function HomeScreen() {
 
   const dynamicStyles = {
     container: {
-      backgroundColor: isDark ? '#000000' : '#FFFFFF',
+      backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
     },
     header: {
       ...styles.header,
-      backgroundColor: isDark ? '#151718' : '#FFFFFF',
-      borderBottomColor: isDark ? '#2A2A2A' : '#E5E7EB',
+      backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+      borderBottomColor: isDark ? '#334155' : '#E2E8F0',
     },
     headerContent: {
-      backgroundColor: isDark ? '#151718' : '#FFFFFF',
+      backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
     },
     actionCard: {
       ...styles.actionCard,
-      backgroundColor: isDark ? '#1F1F1F' : '#F9FAFB',
-      borderColor: isDark ? '#2A2A2A' : '#E5E7EB',
+      backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+      borderColor: isDark ? '#334155' : '#E2E8F0',
     },
   };
 
@@ -133,7 +135,7 @@ export default function HomeScreen() {
                 </ThemedText>
               </View>
               <ThemedText type="subtitle" style={styles.subtitle}>
-                {currentUser ? `${currentUser.name} • ${currentUser.role}` : 'Système de suivi des bagages'}
+                {currentUser ? `${currentUser.name} • ${currentUser.role}` : t('home.subtitle')}
               </ThemedText>
             </View>
             <View style={styles.headerActions}>
@@ -157,7 +159,8 @@ export default function HomeScreen() {
             {isAgent ? (
               // Pour les agents, afficher la station en lecture seule
               <View style={[styles.stationDisplay, { 
-                backgroundColor: isDark ? '#1F1F1F' : '#F3F4F6' 
+                backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                borderColor: isDark ? '#334155' : '#E2E8F0',
               }]}>
                 <Ionicons name="location" size={20} color="#3B82F6" />
                 <ThemedText style={[styles.stationDisplayText, {
@@ -188,10 +191,10 @@ export default function HomeScreen() {
           <ThemedView style={styles.section}>
             <View style={styles.notificationsHeader}>
               <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-                Alertes urgentes
+                {t('home.urgentAlerts')}
               </ThemedText>
               <Pressable onPress={() => router.push('/notifications')}>
-                <ThemedText style={styles.seeAllLink}>Voir tout</ThemedText>
+                <ThemedText style={styles.seeAllLink}>{t('home.seeAll')}</ThemedText>
               </Pressable>
             </View>
             {urgentNotifications.map((notification) => (
@@ -210,7 +213,7 @@ export default function HomeScreen() {
 
         <ThemedView style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            Actions rapides
+            {t('home.quickActions')}
           </ThemedText>
 
           {isAgent && (
@@ -224,10 +227,10 @@ export default function HomeScreen() {
                 <Ionicons name="qr-code-outline" size={32} color="#3B82F6" />
                 <View style={styles.actionContent}>
                   <ThemedText type="defaultSemiBold" style={styles.actionTitle}>
-                    Scanner un bagage
+                    {t('home.scanBaggage')}
                   </ThemedText>
                   <ThemedText style={styles.actionDescription}>
-                    Scannez ou saisissez le numéro de bagage pour mettre à jour son statut
+                    {t('home.scanBaggage.description')}
                   </ThemedText>
                 </View>
                 <Ionicons name="chevron-forward" size={24} color={isDark ? '#9CA3AF' : '#6B7280'} />
@@ -242,10 +245,10 @@ export default function HomeScreen() {
                 <Ionicons name="ticket-outline" size={32} color="#8B5CF6" />
                 <View style={styles.actionContent}>
                   <ThemedText type="defaultSemiBold" style={styles.actionTitle}>
-                    Scanner une carte d'embarquement
+                    {t('home.scanBoardingPass')}
                   </ThemedText>
                   <ThemedText style={styles.actionDescription}>
-                    Scannez le QR code d'une carte d'embarquement pour lier les bagages
+                    {t('home.scanBoardingPass.description')}
                   </ThemedText>
                 </View>
                 <Ionicons name="chevron-forward" size={24} color={isDark ? '#9CA3AF' : '#6B7280'} />
@@ -262,10 +265,10 @@ export default function HomeScreen() {
             <Ionicons name="search-outline" size={32} color="#10B981" />
             <View style={styles.actionContent}>
               <ThemedText type="defaultSemiBold" style={styles.actionTitle}>
-                Rechercher un bagage
+                {t('home.searchBaggage')}
               </ThemedText>
               <ThemedText style={styles.actionDescription}>
-                Recherchez un bagage par numéro ou PNR pour voir son statut
+                {t('home.searchBaggage.description')}
               </ThemedText>
             </View>
             <Ionicons name="chevron-forward" size={24} color={isDark ? '#9CA3AF' : '#6B7280'} />
@@ -280,10 +283,10 @@ export default function HomeScreen() {
             <Ionicons name="alert-circle-outline" size={32} color="#EF4444" />
             <View style={styles.actionContent}>
               <ThemedText type="defaultSemiBold" style={styles.actionTitle}>
-                Bagages manquants
+                {t('home.missingBags')}
               </ThemedText>
               <ThemedText style={styles.actionDescription}>
-                Consulter la liste des bagages manquants par vol
+                {t('home.missingBags.description')}
               </ThemedText>
             </View>
             <Ionicons name="chevron-forward" size={24} color={isDark ? '#9CA3AF' : '#6B7280'} />
@@ -298,10 +301,10 @@ export default function HomeScreen() {
             <Ionicons name="time-outline" size={32} color="#6366F1" />
             <View style={styles.actionContent}>
               <ThemedText type="defaultSemiBold" style={styles.actionTitle}>
-                Historique des activités
+                {t('home.activityHistory')}
               </ThemedText>
               <ThemedText style={styles.actionDescription}>
-                Consulter l'historique des scans et activités
+                {t('home.activityHistory.description')}
               </ThemedText>
             </View>
             <Ionicons name="chevron-forward" size={24} color={isDark ? '#9CA3AF' : '#6B7280'} />
@@ -317,10 +320,10 @@ export default function HomeScreen() {
               <Ionicons name="document-text-outline" size={32} color="#F59E0B" />
               <View style={styles.actionContent}>
                 <ThemedText type="defaultSemiBold" style={styles.actionTitle}>
-                  Importer des données
+                  {t('home.importData')}
                 </ThemedText>
                 <ThemedText style={styles.actionDescription}>
-                  Charger les données depuis un fichier CSV ou Excel
+                  {t('home.importData.description')}
                 </ThemedText>
               </View>
               <Ionicons name="chevron-forward" size={24} color={isDark ? '#9CA3AF' : '#6B7280'} />
@@ -330,15 +333,13 @@ export default function HomeScreen() {
 
         <ThemedView style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            À propos
+            {t('home.about')}
           </ThemedText>
           <ThemedText style={styles.description}>
-            BRS-CSI (Baggage Reconciliation System – Cargo System Integration) est une solution
-            de suivi des bagages pour les aéroports d&apos;African Transport Systems (ATS) en RDC.
+            {t('home.about.description1')}
           </ThemedText>
           <ThemedText style={styles.description}>
-            L&apos;application permet de tracer chaque bagage depuis l&apos;enregistrement jusqu&apos;à la
-            livraison, avec gestion des lots de bagages et suivi en temps réel.
+            {t('home.about.description2')}
           </ThemedText>
         </ThemedView>
       </ThemedView>
@@ -359,14 +360,14 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: Platform.OS === 'ios' ? 8 : 16,
-    paddingBottom: 16,
+    paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   headerContent: {
     paddingTop: 8,
@@ -384,16 +385,17 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '700',
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
   },
   subtitle: {
-    marginTop: 4,
+    marginTop: 6,
     marginLeft: 40,
     fontSize: 15,
-    opacity: 0.7,
-    lineHeight: 20,
+    opacity: 0.75,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   scrollContent: {
     flex: 1,
@@ -404,10 +406,11 @@ const styles = StyleSheet.create({
   stationDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    gap: 10,
+    borderWidth: 1,
   },
   stationDisplayText: {
     fontSize: 15,
@@ -415,42 +418,45 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: 20,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 36,
   },
   sectionTitle: {
-    fontSize: 20,
-    marginBottom: 16,
+    fontSize: 22,
+    marginBottom: 20,
     fontWeight: '600',
+    letterSpacing: -0.4,
   },
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18,
-    borderRadius: 12,
-    marginBottom: 12,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 14,
     borderWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   actionContent: {
     flex: 1,
     marginLeft: 16,
   },
   actionTitle: {
-    fontSize: 17,
+    fontSize: 18,
     marginBottom: 6,
     fontWeight: '600',
+    letterSpacing: -0.3,
   },
   actionDescription: {
     fontSize: 15,
-    lineHeight: 20,
-    opacity: 0.9,
+    lineHeight: 22,
+    opacity: 0.8,
+    fontWeight: '400',
   },
   description: {
     fontSize: 15,

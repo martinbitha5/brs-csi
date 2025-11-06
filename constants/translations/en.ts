@@ -70,6 +70,80 @@ export const translations = {
   'settings.logout.message': 'Are you sure you want to sign out?',
   'settings.logout.cancel': 'Cancel',
   
+  // Home
+  'home.subtitle': 'Baggage Tracking System',
+  'home.urgentAlerts': 'Urgent Alerts',
+  'home.seeAll': 'See all',
+  'home.quickActions': 'Quick Actions',
+  'home.scanBaggage': 'Scan a baggage',
+  'home.scanBaggage.description': 'Scan or enter the baggage number to update its status',
+  'home.scanBoardingPass': 'Scan a boarding pass',
+  'home.scanBoardingPass.description': 'Scan the QR code of a boarding pass to link the baggage',
+  'home.searchBaggage': 'Search for baggage',
+  'home.searchBaggage.description': 'Search for baggage by number or PNR to see its status',
+  'home.missingBags': 'Missing baggage',
+  'home.missingBags.description': 'View the list of missing baggage by flight',
+  'home.activityHistory': 'Activity History',
+  'home.activityHistory.description': 'View the history of scans and activities',
+  'home.importData': 'Import data',
+  'home.importData.description': 'Load data from a CSV or Excel file',
+  'home.about': 'About',
+  'home.about.description1': 'BRS-CSI (Baggage Reconciliation System – Cargo System Integration) is a baggage tracking solution for African Transport Systems (ATS) airports in DRC.',
+  'home.about.description2': 'The application allows tracking each baggage from check-in to delivery, with baggage batch management and real-time tracking.',
+  
+  // Search
+  'search.title': 'Search',
+  'search.subtitle': 'Search for baggage by tag or PNR',
+  
+  // Scan
+  'scan.title': 'Scan',
+  'scan.baggage.placeholder': 'Scan a baggage tag',
+  'scan.boardingPass.placeholder': 'Scan a boarding pass',
+  'scan.showHistory': 'Show history',
+  'scan.hideHistory': 'Hide history',
+  'scan.error.boardingPass': 'Unable to scan boarding pass',
+  'scan.success.title': 'Scan successful',
+  'scan.success.baggage': 'Baggage {tagFull} scanned successfully.\nStatus: {status}',
+  'scan.success.boardingPass': 'Boarding pass scanned successfully.\n{count} baggage{plural} associated.',
+  'scan.success.boardingPass.noBags': 'Boarding pass scanned successfully.\nNo baggage found.',
+  'scan.error.generic': 'An error occurred',
+  'scan.mode.baggage': 'Baggage',
+  'scan.mode.boardingPass': 'Boarding pass',
+  'scan.result.lastScanned': 'Last scanned baggage',
+  'scan.result.boardingPassScanned': 'Boarding pass scanned',
+  
+  // Missing
+  'missing.title': 'Missing baggage',
+  'missing.subtitle': 'List of missing baggage by flight',
+  'missing.empty': 'No missing baggage',
+  'missing.empty.flight': 'No missing baggage for this flight.',
+  'missing.empty.station': 'No missing baggage in this station.',
+  'missing.count': '{count} missing baggage{plural}',
+  
+  // Notifications
+  'notifications.title': 'Notifications',
+  'notifications.subtitle': 'Real-time alerts and warnings',
+  
+  // Missing
+  'missing.title': 'Missing baggage',
+  'missing.subtitle': 'List of missing baggage by flight',
+  
+  // Activity
+  'activity.title': 'Activities',
+  'activity.subtitle': 'History of scans and activities',
+  
+  // FAQ
+  'faq.title': 'Frequently Asked Questions (FAQ)',
+  'faq.subtitle': 'Find answers to all your questions',
+  
+  // Tabs
+  'tabs.home': 'Home',
+  'tabs.scan': 'Scan',
+  'tabs.missing': 'Missing',
+  'tabs.activity': 'Activity',
+  'tabs.supervisor': 'Supervision',
+  'tabs.settings': 'Settings',
+  
   // Common
   'common.ok': 'OK',
   'common.error': 'Error',

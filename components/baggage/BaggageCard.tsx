@@ -65,53 +65,60 @@ export const BaggageCard: React.FC<BaggageCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     marginVertical: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   tagFull: {
-    fontSize: 18,
-    marginBottom: 4,
+    fontSize: 20,
+    marginBottom: 6,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
   pieceIndex: {
     fontSize: 14,
-    opacity: 0.7,
+    opacity: 0.75,
+    fontWeight: '500',
   },
   passengerInfo: {
-    marginBottom: 12,
-    paddingTop: 12,
+    marginBottom: 16,
+    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
   passengerName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+    letterSpacing: -0.2,
   },
   details: {
-    gap: 8,
+    gap: 12,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   detailLabel: {
     fontSize: 14,
     opacity: 0.7,
+    fontWeight: '500',
   },
   detailValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });
 

@@ -5,11 +5,13 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/use-translation';
 import { authService } from '@/services/authService';
 import { UserRole } from '@/types';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { t } = useTranslation();
   const currentUser = authService.getCurrentUser();
   const isSupervisorOrAdmin = currentUser ? authService.isSupervisorOrAdmin() : false;
   const isAdmin = currentUser ? authService.isAdmin() : false;
@@ -27,14 +29,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Accueil',
+          title: t('tabs.home'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="scan"
         options={{
-          title: 'Scanner',
+          title: t('tabs.scan'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="qrcode.viewfinder" color={color} />,
           href: isAgent ? undefined : null, // Masquer complètement pour les superviseurs et admins
         }}
@@ -42,21 +44,21 @@ export default function TabLayout() {
       <Tabs.Screen
         name="missing"
         options={{
-          title: 'Manquants',
+          title: t('tabs.missing'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="exclamationmark.triangle.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="activity"
         options={{
-          title: 'Activités',
+          title: t('tabs.activity'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="clock.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="supervisor"
         options={{
-          title: 'Supervision',
+          title: t('tabs.supervisor'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.bar.fill" color={color} />,
           href: showSupervisorTab ? undefined : null, // Masquer complètement pour les agents
         }}
@@ -82,7 +84,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Paramètres',
+          title: t('tabs.settings'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
         }}
       />

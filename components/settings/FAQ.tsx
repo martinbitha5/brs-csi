@@ -3,6 +3,7 @@ import { StyleSheet, View, TouchableOpacity, ScrollView, Linking } from 'react-n
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/use-translation';
 import { UserRole } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -436,6 +437,7 @@ interface FAQProps {
 export default function FAQ({ role }: FAQProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { t } = useTranslation();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
@@ -488,10 +490,10 @@ export default function FAQ({ role }: FAQProps) {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <ThemedText type="title" style={[styles.mainTitle, dynamicStyles.categoryTitle]}>
-        Questions fréquentes (FAQ)
+        {t('faq.title')}
       </ThemedText>
       <ThemedText type="subtitle" style={[styles.mainSubtitle, dynamicStyles.answer]}>
-        Trouvez des réponses à toutes vos questions
+        {t('faq.subtitle')}
       </ThemedText>
 
       {faqCategories.map((category, categoryIndex) => {

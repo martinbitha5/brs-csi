@@ -61,10 +61,10 @@ export const StationSelector: React.FC<StationSelectorProps> = ({
                     style={[
                       styles.stationItem,
                       {
-                        backgroundColor: isDark ? '#1F1F1F' : '#F9FAFB',
+                        backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
                         borderColor: currentStation === airport.code 
-                          ? '#3B82F6' 
-                          : (isDark ? '#2A2A2A' : '#E5E7EB'),
+                          ? '#2563EB' 
+                          : (isDark ? '#334155' : '#E2E8F0'),
                       },
                       currentStation === airport.code && {
                         backgroundColor: isDark ? '#1E3A5F' : '#EBF4FF',
@@ -110,17 +110,20 @@ const styles = StyleSheet.create({
   selector: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   selectorText: {
     fontSize: 15,
     fontWeight: '600',
     flex: 1,
-    color: '#111827',
+    color: '#0F172A',
+    letterSpacing: -0.2,
   },
   modalOverlay: {
     flex: 1,
@@ -128,10 +131,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
     maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -153,9 +161,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
+    padding: 18,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   stationInfo: {
     flex: 1,

@@ -69,9 +69,9 @@ export function NotificationCard({
   const dynamicStyles = {
     card: {
       ...styles.card,
-      backgroundColor: isDark ? '#1F1F1F' : '#FFFFFF',
+      backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
       borderLeftColor: priorityColor,
-      borderColor: isDark ? '#2A2A2A' : '#E5E7EB',
+      borderColor: isDark ? '#334155' : '#E2E8F0',
       // Opacité plus élevée pour meilleure lisibilité (0.9 au lieu de 0.7 pour les notifications lues)
       opacity: notification.read ? 0.9 : 1,
     },
@@ -168,16 +168,16 @@ function formatTime(dateString: string): string {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderLeftWidth: 4,
-    padding: 16,
-    marginBottom: 12,
+    borderLeftWidth: 5,
+    padding: 20,
+    marginBottom: 14,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardPressed: {
     opacity: 0.7,
@@ -198,9 +198,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   title: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     flex: 1,
+    letterSpacing: -0.2,
   },
   unreadDot: {
     width: 8,
@@ -209,10 +210,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   message: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 14,
     opacity: 1, // Opacité complète pour meilleure lisibilité
+    fontWeight: '400',
   },
   flightDetails: {
     marginTop: 8,

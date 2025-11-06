@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/use-translation';
 import { Notification, UserRole } from '@/types';
 import { useRouter } from 'expo-router';
 import { authService } from '@/services/authService';
@@ -14,6 +15,7 @@ export default function NotificationsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleNotificationPress = async (notification: Notification) => {
     // Naviguer vers le vol ou le bagage concerné
@@ -46,12 +48,12 @@ export default function NotificationsScreen() {
 
   const dynamicStyles = {
     container: {
-      backgroundColor: isDark ? '#000000' : '#FFFFFF',
+      backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
     },
     header: {
       ...styles.header,
-      backgroundColor: isDark ? '#151718' : '#FFFFFF',
-      borderBottomColor: isDark ? '#2A2A2A' : '#E5E7EB',
+      backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+      borderBottomColor: isDark ? '#334155' : '#E2E8F0',
     },
   };
 
@@ -69,11 +71,11 @@ export default function NotificationsScreen() {
                   style={styles.titleIcon}
                 />
                 <ThemedText type="title" style={styles.title}>
-                  Notifications
+                  {t('notifications.title')}
                 </ThemedText>
               </View>
               <ThemedText type="subtitle" style={styles.subtitle}>
-                Alertes et avertissements en temps réel
+                {t('notifications.subtitle')}
               </ThemedText>
             </View>
           </View>
@@ -92,14 +94,14 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: Platform.OS === 'ios' ? 8 : 16,
-    paddingBottom: 16,
+    paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   headerContent: {
     paddingTop: 8,
@@ -121,16 +123,17 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '700',
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
   },
   subtitle: {
-    marginTop: 4,
+    marginTop: 6,
     marginLeft: 40,
     fontSize: 15,
-    opacity: 0.7,
-    lineHeight: 20,
+    opacity: 0.75,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   content: {
     flex: 1,

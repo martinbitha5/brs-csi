@@ -37,12 +37,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'medium
 
 const styles = StyleSheet.create({
   badge: {
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 8,
+    borderWidth: 1.5,
     alignSelf: 'flex-start',
   },
   text: {
     fontWeight: '600',
+    letterSpacing: 0.2,
   },
 });
 

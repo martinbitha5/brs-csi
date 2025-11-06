@@ -37,15 +37,15 @@ export const AgentStatistics: React.FC<AgentStatisticsProps> = ({
     <ThemedView style={[
       styles.statCard,
       {
-        backgroundColor: isDark ? '#1F1F1F' : '#F9FAFB',
-        borderColor: isDark ? '#2A2A2A' : '#E5E7EB',
+        backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+        borderColor: isDark ? '#334155' : '#E2E8F0',
       }
     ]}>
       <View style={[styles.statIcon, { backgroundColor: `${color}15` }]}>
-        <Ionicons name={icon} size={24} color={color} />
+        <Ionicons name={icon} size={26} color={color} />
       </View>
-      <ThemedText style={[styles.statValue, { color: isDark ? '#FFFFFF' : '#111827' }]}>{value}</ThemedText>
-      <ThemedText style={[styles.statLabel, { color: isDark ? '#D1D5DB' : '#4B5563', opacity: 1 }]}>{label}</ThemedText>
+      <ThemedText style={[styles.statValue, { color: isDark ? '#F1F5F9' : '#0F172A' }]}>{value}</ThemedText>
+      <ThemedText style={[styles.statLabel, { color: isDark ? '#94A3B8' : '#64748B', opacity: 1 }]}>{label}</ThemedText>
     </ThemedView>
   );
 
@@ -86,42 +86,51 @@ export const AgentStatistics: React.FC<AgentStatisticsProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 0,
   },
   title: {
-    marginBottom: 16,
+    marginBottom: 20,
     fontWeight: '600',
+    fontSize: 20,
+    letterSpacing: -0.4,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 14,
   },
   statCard: {
     flex: 1,
     minWidth: '45%',
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 6,
+    letterSpacing: -0.5,
   },
   statLabel: {
     fontSize: 13,
     textAlign: 'center',
     fontWeight: '500',
+    letterSpacing: -0.1,
   },
 });
 
