@@ -13,6 +13,14 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table des mots de passe utilisateurs
+CREATE TABLE IF NOT EXISTS user_passwords (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  password TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Table des vols
 CREATE TABLE IF NOT EXISTS flights (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -121,6 +129,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created
 CREATE INDEX IF NOT EXISTS idx_notifications_station ON notifications(station);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_user_passwords_user_id ON user_passwords(user_id);
 
 -- Fonction pour mettre à jour updated_at automatiquement
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -150,6 +159,9 @@ CREATE TRIGGER update_boarding_passes_updated_at BEFORE UPDATE ON boarding_passe
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_user_passwords_updated_at BEFORE UPDATE ON user_passwords
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Politiques RLS (Row Level Security) - À activer selon vos besoins
 -- Pour l'instant, nous désactivons RLS pour simplifier, mais vous pouvez l'activer plus tard
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -160,12 +172,48 @@ ALTER TABLE bag_pieces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE boarding_passes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE scan_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_passwords ENABLE ROW LEVEL SECURITY;
 
--- Politiques de base : permettre la lecture et écriture pour tous les utilisateurs authentifiés
+-- Politiques de base : permettre l'inscription publique et l'accès pour les utilisateurs authentifiés
 -- Vous pouvez ajuster ces politiques selon vos besoins de sécurité
-CREATE POLICY "Allow all for authenticated users" ON users
-  FOR ALL USING (auth.role() = 'authenticated');
 
+-- Table users : permettre l'inscription publique (INSERT) et l'accès pour les utilisateurs authentifiés
+CREATE POLICY "Allow public registration" ON users
+  FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Allow read for authenticated users" ON users
+  FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow update for authenticated users" ON users
+  FOR UPDATE
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow delete for authenticated users" ON users
+  FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+-- Table user_passwords : permettre l'inscription publique (INSERT) et l'accès pour les utilisateurs authentifiés
+CREATE POLICY "Allow public password creation" ON user_passwords
+  FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Allow read for authenticated users" ON user_passwords
+  FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow update for authenticated users" ON user_passwords
+  FOR UPDATE
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow delete for authenticated users" ON user_passwords
+  FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+-- Autres tables : permettre l'accès pour tous les utilisateurs authentifiés
 CREATE POLICY "Allow all for authenticated users" ON flights
   FOR ALL USING (auth.role() = 'authenticated');
 

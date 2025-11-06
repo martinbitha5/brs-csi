@@ -11,6 +11,7 @@ import {
   ScanAction,
   BagPieceStatus,
   Notification,
+  User,
 } from '@/types';
 import { ErrorHandler, withErrorHandling, AppError } from './errorHandler';
 
@@ -686,6 +687,177 @@ export const apiClient = {
       created_at: formatDate(data.created_at) || new Date().toISOString(),
       expires_at: formatDate(data.expires_at || null),
     };
+  },
+
+  // ============ USERS ============
+  async getUser(id: string): Promise<User | null> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null; // Not found
+      handleSupabaseError(error, 'getUser');
+    }
+
+    return data ? {
+      ...data,
+      created_at: formatDate(data.created_at) || new Date().toISOString(),
+      updated_at: formatDate(data.updated_at) || new Date().toISOString(),
+    } : null;
+  },
+
+  async getUserByEmail(email: string): Promise<User | null> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null; // Not found
+      handleSupabaseError(error, 'getUserByEmail');
+    }
+
+    return data ? {
+      ...data,
+      created_at: formatDate(data.created_at) || new Date().toISOString(),
+      updated_at: formatDate(data.updated_at) || new Date().toISOString(),
+    } : null;
+  },
+
+  async getUsers(): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) handleSupabaseError(error, 'getUsers');
+
+    return (data || []).map((user) => ({
+      ...user,
+      created_at: formatDate(user.created_at) || new Date().toISOString(),
+      updated_at: formatDate(user.updated_at) || new Date().toISOString(),
+    }));
+  },
+
+  async createUser(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        station: user.station,
+        language: user.language,
+      })
+      .select()
+      .single();
+
+    if (error) handleSupabaseError(error, 'createUser');
+
+    return {
+      ...data,
+      created_at: formatDate(data.created_at) || new Date().toISOString(),
+      updated_at: formatDate(data.updated_at) || new Date().toISOString(),
+    };
+  },
+
+  async updateUser(
+    id: string,
+    updates: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>
+  ): Promise<User> {
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        name: updates.name,
+        email: updates.email,
+        role: updates.role,
+        station: updates.station,
+        language: updates.language,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) handleSupabaseError(error, 'updateUser');
+
+    return {
+      ...data,
+      created_at: formatDate(data.created_at) || new Date().toISOString(),
+      updated_at: formatDate(data.updated_at) || new Date().toISOString(),
+    };
+  },
+
+  async deleteUser(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+
+    if (error) handleSupabaseError(error, 'deleteUser');
+  },
+
+  // ============ USER PASSWORDS ============
+  async getUserPassword(userId: string): Promise<string | null> {
+    const { data, error } = await supabase
+      .from('user_passwords')
+      .select('password')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null; // Not found
+      handleSupabaseError(error, 'getUserPassword');
+    }
+
+    return data?.password || null;
+  },
+
+  async setUserPassword(userId: string, password: string): Promise<void> {
+    // Vérifier si un mot de passe existe déjà
+    const { data: existing, error: checkError } = await supabase
+      .from('user_passwords')
+      .select('user_id')
+      .eq('user_id', userId)
+      .single();
+
+    // Si l'erreur est "not found", on crée un nouveau mot de passe
+    // Sinon, si une erreur autre se produit, on la gère
+    if (checkError && checkError.code !== 'PGRST116') {
+      handleSupabaseError(checkError, 'setUserPassword');
+    }
+
+    if (existing) {
+      // Mettre à jour le mot de passe existant
+      const { error } = await supabase
+        .from('user_passwords')
+        .update({ password })
+        .eq('user_id', userId);
+
+      if (error) handleSupabaseError(error, 'setUserPassword');
+    } else {
+      // Créer un nouveau mot de passe
+      const { error } = await supabase
+        .from('user_passwords')
+        .insert({
+          user_id: userId,
+          password,
+        });
+
+      if (error) handleSupabaseError(error, 'setUserPassword');
+    }
+  },
+
+  async deleteUserPassword(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_passwords')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) handleSupabaseError(error, 'deleteUserPassword');
   },
 };
 

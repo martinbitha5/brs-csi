@@ -34,9 +34,14 @@ export const UserManagementView: React.FC = () => {
     loadUsers();
   }, []);
 
-  const loadUsers = () => {
-    const allUsers = adminService.getUsers();
-    setUsers(allUsers);
+  const loadUsers = async () => {
+    try {
+      const allUsers = await adminService.getUsers();
+      setUsers(allUsers);
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs:', error);
+      Alert.alert('Erreur', 'Impossible de charger les utilisateurs.');
+    }
   };
 
   const handleCreateUser = () => {
@@ -61,30 +66,35 @@ export const UserManagementView: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleSaveUser = () => {
+  const handleSaveUser = async () => {
     if (!formData.name || !formData.email) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
-    if (editingUser) {
-      const result = adminService.updateUser(editingUser.id, formData);
-      if (result.success) {
-        Alert.alert('Succès', 'Utilisateur mis à jour avec succès.');
-        setModalVisible(false);
-        loadUsers();
+    try {
+      if (editingUser) {
+        const result = await adminService.updateUser(editingUser.id, formData);
+        if (result.success) {
+          Alert.alert('Succès', 'Utilisateur mis à jour avec succès.');
+          setModalVisible(false);
+          await loadUsers();
+        } else {
+          Alert.alert('Erreur', result.error || 'Erreur lors de la mise à jour.');
+        }
       } else {
-        Alert.alert('Erreur', result.error || 'Erreur lors de la mise à jour.');
+        const result = await adminService.createUser(formData);
+        if (result.success) {
+          Alert.alert('Succès', 'Utilisateur créé avec succès.');
+          setModalVisible(false);
+          await loadUsers();
+        } else {
+          Alert.alert('Erreur', result.error || 'Erreur lors de la création.');
+        }
       }
-    } else {
-      const result = adminService.createUser(formData);
-      if (result.success) {
-        Alert.alert('Succès', 'Utilisateur créé avec succès.');
-        setModalVisible(false);
-        loadUsers();
-      } else {
-        Alert.alert('Erreur', result.error || 'Erreur lors de la création.');
-      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la sauvegarde.');
     }
   };
 
@@ -97,13 +107,18 @@ export const UserManagementView: React.FC = () => {
         {
           text: 'Supprimer',
           style: 'destructive',
-          onPress: () => {
-            const result = adminService.deleteUser(userId);
-            if (result.success) {
-              Alert.alert('Succès', 'Utilisateur supprimé avec succès.');
-              loadUsers();
-            } else {
-              Alert.alert('Erreur', result.error || 'Erreur lors de la suppression.');
+          onPress: async () => {
+            try {
+              const result = await adminService.deleteUser(userId);
+              if (result.success) {
+                Alert.alert('Succès', 'Utilisateur supprimé avec succès.');
+                await loadUsers();
+              } else {
+                Alert.alert('Erreur', result.error || 'Erreur lors de la suppression.');
+              }
+            } catch (error) {
+              console.error('Erreur lors de la suppression:', error);
+              Alert.alert('Erreur', 'Une erreur est survenue lors de la suppression.');
             }
           },
         },

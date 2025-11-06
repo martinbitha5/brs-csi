@@ -68,8 +68,11 @@ export class ErrorHandler {
     const code = error.code;
     const message = error.message || '';
 
-    // Erreur d'authentification
-    if (code === 'PGRST301' || code === '42501' || message.includes('JWT')) {
+    // Erreur d'authentification (mais pas pour l'inscription)
+    // PGRST301 = JWT expired, 42501 = insufficient_privilege
+    // On vérifie si c'est une erreur de permission lors d'une opération qui nécessite l'authentification
+    if ((code === 'PGRST301' || (code === '42501' && !message.includes('new row violates'))) || 
+        (message.includes('JWT') && !message.includes('registration') && !message.includes('register'))) {
       return {
         type: ErrorType.AUTH_ERROR,
         message: 'Session expirée. Veuillez vous reconnecter.',
@@ -78,8 +81,11 @@ export class ErrorHandler {
       };
     }
 
-    // Erreur de permission
-    if (code === '42501' || message.includes('permission') || message.includes('policy')) {
+    // Erreur de permission (mais pas pour l'inscription)
+    // On vérifie si c'est une erreur de permission qui n'est pas liée à l'inscription
+    if ((code === '42501' && !message.includes('new row violates')) || 
+        (message.includes('permission') && !message.includes('registration') && !message.includes('register')) ||
+        (message.includes('policy') && !message.includes('registration') && !message.includes('register'))) {
       return {
         type: ErrorType.PERMISSION_DENIED,
         message: 'Vous n\'avez pas la permission d\'effectuer cette action.',

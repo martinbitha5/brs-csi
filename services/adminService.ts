@@ -356,28 +356,29 @@ export const adminService = {
   },
 
   // Gestion des utilisateurs (admin uniquement)
-  getUsers: (): User[] => {
+  getUsers: async (): Promise<User[]> => {
     if (!authService.isAdmin()) {
       return [];
     }
-    return authService.getUsers();
+    return await authService.getUsers();
   },
 
-  createUser: (
-    user: Omit<User, 'id' | 'created_at' | 'updated_at'>
-  ): { success: boolean; user?: User; error?: string } => {
-    return authService.createUser(user);
+  createUser: async (
+    user: Omit<User, 'id' | 'created_at' | 'updated_at'>,
+    password?: string
+  ): Promise<{ success: boolean; user?: User; error?: string }> => {
+    return await authService.createUser(user, password);
   },
 
-  updateUser: (
+  updateUser: async (
     id: string,
     updates: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>
-  ): { success: boolean; user?: User; error?: string } => {
-    return authService.updateUser(id, updates);
+  ): Promise<{ success: boolean; user?: User; error?: string }> => {
+    return await authService.updateUser(id, updates);
   },
 
-  deleteUser: (id: string): { success: boolean; error?: string } => {
-    return authService.deleteUser(id);
+  deleteUser: async (id: string): Promise<{ success: boolean; error?: string }> => {
+    return await authService.deleteUser(id);
   },
 
   // Gestion des vols (admin uniquement)
